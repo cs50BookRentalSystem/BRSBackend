@@ -1,0 +1,343 @@
+openapi: 3.0.3
+info:
+  title: Book Rental System
+  description: API for Book Rental service
+  version: 1.0.0
+
+servers:
+  - url: 'http://localhost:8080'
+paths:
+  /login:
+    post:
+      summary: "librarian login"
+      operationId: "Login"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: "Login successful - session created"
+          headers:
+            Set-Cookie:
+              description: "Session cookie to maintain login state"
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  librarian_id:
+                    type: string
+                    format: uuid
+        "401":
+          description: "Invalid username or password"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: "unexpected error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /books:
+    get:
+      summary: "List all books or search by query"
+      operationId: "ListOrSearchBooks"
+      parameters:
+        - name: query
+          in: query
+          required: false
+          description: "Optional search term (partial name or ID)"
+          schema:
+            type: string
+        - $ref: "#/components/parameters/limitParam"
+        - $ref: "#/components/parameters/offsetParam"
+      responses:
+        "200":
+          description: "List of books (all or filtered by query)"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Books"
+        default:
+          description: "unexpected error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: "Add A Book"
+      operationId: "AddBook"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Books"
+      responses:
+        "201":
+          description: "A Book added successfully"
+          headers:
+            Location:
+              description: "URL of the newly created book resource"
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Book added successfully"
+        default:
+          description: "unexpected error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /students:
+    get:
+      summary: "List all students"
+      operationId: "ListAllStudents"
+      parameters:
+        - $ref: "#/components/parameters/limitParam"
+        - $ref: "#/components/parameters/offsetParam"
+      responses:
+        "200":
+          description: "List all students"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Students"
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: "unexpected error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: "Add A Student"
+      operationId: "AddStudent"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Students"
+      responses:
+        "201":
+          description: "A Student added successfully"
+          headers:
+            Location:
+              description: "URL of the newly created book resource"
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Student added successfully"
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: "unexpected error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /students/{id}:
+    get:
+      summary: "Get a Student by ID"
+      operationId: "GetStudentById"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: "The ID of the Student to retrieve"
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: "Student found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Students"
+        "404":
+          description: "Student not found"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Student not found"
+        default:
+          description: "unexpected error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    LoginRequest:
+      x-go-type: models.Librarian
+      x-go-type-import:
+        name: Librarian
+        path: BRSBackend/pkg/models
+      type: object
+      properties:
+        user:
+          type: string
+        pass:
+          type: string
+      required:
+        - user
+        - pass
+    Books:
+      x-go-type: models.Books
+      x-go-type-import:
+        name: Books
+        path: BRSBackend/pkg/models
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          nullable: false
+        description:
+          type: string
+        count:
+          type: integer
+          nullable: false
+    Students:
+      x-go-type: models.Students
+      x-go-type-import:
+        name: Students
+        path: BRSBackend/pkg/models
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        firstName:
+          type: string
+          nullable: false
+        lastName:
+          type: string
+          nullable: false
+        major:
+          type: string
+          nullable: false
+        phone:
+          type: string
+          nullable: false
+    Rents:
+      x-go-type: models.Rents
+      x-go-type-import:
+        name: Rents
+        path: BRSBackend/pkg/models
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        cart_id:
+          type: string
+          format: uuid
+        book_id:
+          type: string
+          format: uuid
+    Carts:
+      x-go-type: models.Carts
+      x-go-type-import:
+        name: Rents
+        path: BRSBackend/pkg/models
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        student_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+            - RENTED
+            - RETURNED
+    Error:
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+          description: Error code
+        message:
+          type: string
+          description: Error message
+  parameters:
+    offsetParam:
+      name: offset
+      in: query
+      description: Number of items to skip before returning the results.
+      required: false
+      schema:
+        type: integer
+        format: int32
+        minimum: 0
+        default: 0
+
+    limitParam:
+      name: limit
+      in: query
+      description: Maximum number of items to return.
+      required: false
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+        maximum: 100
+        default: 20
