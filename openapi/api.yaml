@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Book Rental System
-  description: API for Book Rental service
+  description: API documentation for managing a Book Rental service
   version: 1.0.0
 
 servers:
@@ -10,6 +10,7 @@ paths:
   /login:
     post:
       summary: "librarian login"
+      description: "Authenticate librarian credentials and create a session"
       operationId: "Login"
       requestBody:
         required: true
@@ -18,7 +19,7 @@ paths:
             schema:
               $ref: "#/components/schemas/LoginRequest"
       responses:
-        "200":
+        '200':
           description: "Login successful - session created"
           headers:
             Set-Cookie:
@@ -35,7 +36,7 @@ paths:
                   librarian_id:
                     type: string
                     format: uuid
-        "401":
+        '401':
           description: "Invalid username or password"
           content:
             application/json:
@@ -49,7 +50,8 @@ paths:
                 $ref: '#/components/schemas/Error'
   /books:
     get:
-      summary: "List all books or search by query"
+      summary: "List or search books"
+      description: "Retrieve all books or filter by partial title or ID"
       operationId: "ListOrSearchBooks"
       parameters:
         - name: query
@@ -62,7 +64,7 @@ paths:
         - $ref: "#/components/parameters/offsetParam"
       responses:
         "200":
-          description: "List of books (all or filtered by query)"
+          description: "Successfully retrieved list of books"
           content:
             application/json:
               schema:
@@ -79,7 +81,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
     post:
-      summary: "Add A Book"
+      summary: "Add a new book"
+      description: "Register a new book in the library inventory"
       operationId: "AddBook"
       requestBody:
         required: true
@@ -88,8 +91,8 @@ paths:
             schema:
               $ref: "#/components/schemas/Books"
       responses:
-        "201":
-          description: "A Book added successfully"
+        '201':
+          description: "Book added successfully"
           headers:
             Location:
               description: "URL of the newly created book resource"
@@ -113,13 +116,14 @@ paths:
   /students:
     get:
       summary: "List all students"
+      description: "Retrieve a paginated list of all registered students"
       operationId: "ListAllStudents"
       parameters:
         - $ref: "#/components/parameters/limitParam"
         - $ref: "#/components/parameters/offsetParam"
       responses:
-        "200":
-          description: "List all students"
+        '200':
+          description: "Successfully retrieved list of students"
           content:
             application/json:
               schema:
@@ -130,7 +134,7 @@ paths:
                     items:
                       $ref: "#/components/schemas/Students"
         "400":
-          description: "Bad request"
+          description: "Invalid request parameters"
           content:
             application/json:
               schema:
@@ -142,7 +146,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
     post:
-      summary: "Add A Student"
+      summary: "Register a new student"
+      description: "Add a new student to the system"
       operationId: "AddStudent"
       requestBody:
         required: true
@@ -152,7 +157,7 @@ paths:
               $ref: "#/components/schemas/Students"
       responses:
         "201":
-          description: "A Student added successfully"
+          description: "Student added successfully"
           headers:
             Location:
               description: "URL of the newly created book resource"
@@ -168,7 +173,7 @@ paths:
                     type: string
                     example: "Student added successfully"
         "400":
-          description: "Bad request"
+          description: "Invalid request body"
           content:
             application/json:
               schema:
