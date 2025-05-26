@@ -110,7 +110,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
   /students:
     get:
       summary: "List all students"
@@ -215,6 +214,160 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /rents:
+    post:
+      summary: "Rent books for a student"
+      operationId: "CreateRentTransaction"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RentRequest"
+      responses:
+        "201":
+          description: "Rent created"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cart_id:
+                    type: string
+                    format: uuid
+                  message:
+                    type: string
+                    example: "Books rented successfully"
+    get:
+      summary: "Get list of all rents with optional filters"
+      operationId: "ListRents"
+      parameters:
+        - name: book_name
+          in: query
+          description: "Filter by book title (partial match)"
+          required: false
+          schema:
+            type: string
+        - name: student_name
+          in: query
+          description: "Filter by student first or last name (partial match)"
+          required: false
+          schema:
+            type: string
+        - name: date
+          in: query
+          description: "Filter by rent date (YYYY-MM-DD)"
+          required: false
+          schema:
+            type: string
+            format: date
+        - $ref: "#/components/parameters/limitParam"
+        - $ref: "#/components/parameters/offsetParam"
+      responses:
+        "200":
+          description: "List of rent records"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RentSummary"
+  /returns:
+    get:
+      summary: "List books currently rented by a student"
+      operationId: "GetRentedBooksByStudent"
+      parameters:
+        - name: student_id
+          in: query
+          description: "Student UUID"
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: student_name
+          in: query
+          description: "Partial name of the student (first or last)"
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "List of currently rented books by student"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RentSummary"
+    put:
+      summary: "Mark a cart as returned"
+      operationId: "ReturnBooks"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cart_id:
+                  type: string
+                  format: uuid
+              required:
+                - cart_id
+      responses:
+        "200":
+          description: "Cart marked as returned"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  cart_id:
+                    type: string
+                    format: uuid
+  /overdues:
+    get:
+      summary: "Get list of overdue users"
+      operationId: "ListOverdueUsers"
+      parameters:
+        - name: student_name
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: student_id
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - $ref: "#/components/parameters/limitParam"
+        - $ref: "#/components/parameters/offsetParam"
+      responses:
+        "200":
+          description: "List of overdue users"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OverdueUser"
+  /reports:
+    get:
+      summary: "Get rent statistics report"
+      operationId: "GetRentReport"
+      parameters:
+        - $ref: "#/components/parameters/limitParam"
+        - $ref: "#/components/parameters/offsetParam"
+      responses:
+        "200":
+          description: "Rent report retrieved successfully"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RentReport"
 
 components:
   schemas:
@@ -232,6 +385,70 @@ components:
       required:
         - user
         - pass
+    RentRequest:
+      type: object
+      properties:
+        student_id:
+          type: string
+          format: uuid
+        book_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+      required:
+        - student_id
+        - book_ids
+    RentSummary:
+      type: object
+      properties:
+        rent_id:
+          type: string
+          format: uuid
+        cart_id:
+          type: string
+          format: uuid
+        book_title:
+          type: string
+        student_name:
+          type: string
+        rented_date:
+          type: string
+          format: date-time
+    OverdueUser:
+      type: object
+      properties:
+        student_name:
+          type: string
+        phone:
+          type: string
+        total_books:
+          type: integer
+        date_rented:
+          type: string
+          format: date-time
+        days_overdue:
+          type: integer
+    BookRentStats:
+      type: object
+      properties:
+        book_title:
+          type: string
+        rented_count:
+          type: integer
+
+    RentReport:
+      type: object
+      properties:
+        total_rents:
+          type: integer
+        total_students:
+          type: integer
+        top_books:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookRentStats"
+
     Books:
       x-go-type: models.Books
       x-go-type-import:
