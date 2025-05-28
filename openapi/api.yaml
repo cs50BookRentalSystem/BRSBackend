@@ -31,7 +31,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/LoginRequest"
+              $ref: '#/components/schemas/LoginRequest'
             example:
               user: "admin"
               pass: "securePasswd"
@@ -66,11 +66,7 @@ paths:
                 code: 401
                 message: "Invalid credentials"
         '500':
-          description: "An unexpected error occurred."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: '#/components/responses/InternalServerError'
   /logout:
     post:
       summary: "Logout librarian"
@@ -89,6 +85,8 @@ paths:
                   message:
                     type: string
                     example: "Logout successful"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   /books:
     get:
@@ -101,13 +99,16 @@ paths:
         - name: query
           in: query
           required: false
-          description: "Optional search term (partial name or ID)"
+          description: "Optional search term (partial title match or exact ID match)"
           schema:
             type: string
-        - $ref: "#/components/parameters/limitParam"
-        - $ref: "#/components/parameters/offsetParam"
+            minLength: 1
+            maxLength: 100
+          example: "Theory of Everything"
+        - $ref: '#/components/parameters/limitParam'
+        - $ref: '#/components/parameters/offsetParam'
       responses:
-        "200":
+        '200':
           description: "Successfully retrieved list of books"
           content:
             application/json:
@@ -118,18 +119,12 @@ paths:
                     type: array
                     items:
                       $ref: "#/components/schemas/Books"
-        "400":
-          description: "Invalid request parameters"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        default:
-          description: "An unexpected error occurred."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+        '400':
+          $ref: '#/components/responses/InvalidRequestParameters'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
     post:
       summary: "Add a new book"
       description: "Register a new book in the library inventory"
@@ -141,7 +136,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Books"
+              $ref: '#/components/schemas/Books'
       responses:
         '201':
           description: "Book added successfully"
@@ -159,18 +154,12 @@ paths:
                   message:
                     type: string
                     example: "Book added successfully"
-        "400":
-          description: "Invalid request body"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        default:
-          description: "An unexpected error occurred."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+        '400':
+          $ref: '#/components/responses/InvalidRequestBody'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   /students:
     get:
@@ -180,8 +169,8 @@ paths:
       tags:
         - Students
       parameters:
-        - $ref: "#/components/parameters/limitParam"
-        - $ref: "#/components/parameters/offsetParam"
+        - $ref: '#/components/parameters/limitParam'
+        - $ref: '#/components/parameters/offsetParam'
       responses:
         '200':
           description: "Successfully retrieved list of students"
@@ -193,19 +182,13 @@ paths:
                   results:
                     type: array
                     items:
-                      $ref: "#/components/schemas/Students"
-        "400":
-          description: "Invalid request parameters"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        default:
-          description: "An unexpected error occurred."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+                      $ref: '#/components/schemas/Students'
+        '400':
+          $ref: '#/components/responses/InvalidRequestParameters'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
     post:
       summary: "Register a new student"
       description: "Add a new student to the system"
@@ -217,9 +200,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Students"
+              $ref: '#/components/schemas/Students'
       responses:
-        "201":
+        '201':
           description: "Student added successfully"
           headers:
             Location:
@@ -235,18 +218,12 @@ paths:
                   message:
                     type: string
                     example: "Student added successfully"
-        "400":
-          description: "Invalid request body"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        default:
-          description: "An unexpected error occurred."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+        '400':
+          $ref: '#/components/responses/InvalidRequestBody'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   /students/{id}:
     get:
@@ -263,13 +240,13 @@ paths:
             type: string
             format: uuid
       responses:
-        "200":
+        '200':
           description: "Student found"
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Students"
-        "404":
+                $ref: '#/components/schemas/Students'
+        '404':
           description: "Student not found"
           content:
             application/json:
@@ -279,12 +256,10 @@ paths:
                   message:
                     type: string
                     example: "Student not found"
-        default:
-          description: "An unexpected error occurred."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   /rents:
     post:
@@ -297,9 +272,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/RentRequest"
+              $ref: '#/components/schemas/RentRequest'
       responses:
-        "201":
+        '201':
           description: "Rent created"
           content:
             application/json:
@@ -312,18 +287,12 @@ paths:
                   message:
                     type: string
                     example: "Books rented successfully"
-        "400":
-          description: "Invalid request body"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        default:
-          description: "An unexpected error occurred."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+        '400':
+          $ref: '#/components/responses/InvalidRequestBody'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
     get:
       summary: "Get list of all rents with optional filters"
       operationId: "ListRents"
@@ -352,26 +321,20 @@ paths:
         - $ref: "#/components/parameters/limitParam"
         - $ref: "#/components/parameters/offsetParam"
       responses:
-        "200":
+        '200':
           description: "List of rent records"
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/RentSummary"
-        "400":
-          description: "Invalid request parameters"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        default:
-          description: "An unexpected error occurred."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+                  $ref: '#/components/schemas/RentSummary'
+        '400':
+          $ref: '#/components/responses/InvalidRequestParameters'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   /returns:
     get:
@@ -395,26 +358,20 @@ paths:
           schema:
             type: string
       responses:
-        "200":
+        '200':
           description: "List of currently rented books by student"
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/RentSummary"
-        "400":
-          description: "Invalid request parameters"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        default:
-          description: "An unexpected error occurred."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+                  $ref: '#/components/schemas/RentSummary'
+        '400':
+          $ref: '#/components/responses/InvalidRequestParameters'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
     put:
       summary: "Mark a cart as returned"
       operationId: "ReturnBooks"
@@ -434,7 +391,7 @@ paths:
               required:
                 - cart_id
       responses:
-        "200":
+        '200':
           description: "Cart marked as returned"
           content:
             application/json:
@@ -446,18 +403,12 @@ paths:
                   cart_id:
                     type: string
                     format: uuid
-        "400":
-          description: "Invalid request body"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        default:
-          description: "An unexpected error occurred."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+        '400':
+          $ref: '#/components/responses/InvalidRequestBody'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   /overdues:
     get:
@@ -488,18 +439,12 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/OverdueUser"
-        "400":
-          description: "Invalid request parameters"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        default:
-          description: "An unexpected error occurred."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+        '400':
+          $ref: '#/components/responses/InvalidRequestParameters'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /reports:
     get:
       summary: "Get rent statistics report"
@@ -516,18 +461,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/RentReport"
-        "400":
-          description: "Invalid request parameters"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        default:
-          description: "An unexpected error occurred."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+        '400':
+          $ref: '#/components/responses/InvalidRequestParameters'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
 components:
   schemas:
@@ -727,3 +666,44 @@ components:
         minimum: 1
         maximum: 100
         default: 20
+
+  responses:
+    UnauthorizedError:
+      description: "Authentication required or session expired"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 401
+            message: "Authentication required"
+    
+    InternalServerError:
+      description: "Internal server error"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 500
+            message: "An unexpected error occurred"
+
+    InvalidRequestParameters:
+      description: "Invalid request parameters"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 400
+            message: "Invalid request parameters"
+
+    InvalidRequestBody:
+      description: "Invalid request Body"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 400
+            message: "Invalid request Body"
