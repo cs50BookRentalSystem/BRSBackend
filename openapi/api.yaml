@@ -1,23 +1,40 @@
 openapi: 3.0.3
 info:
-  title: Book Rental System
-  description: API documentation for managing a Book Rental service
+  title: Book Rental System API
+  description: | 
+    A comprehensive API for managing a library's book rental system, including: 
+    - Librarian authentication 
+    - Book inventory management 
+    - Student registration and management 
+    - Book rental and return transactions
+    - Overdue tracking and reporting
   version: 1.0.0
 
 servers:
   - url: 'http://localhost:8080'
+    description: "Local setup"
+
+security:
+  - cookieAuth: []
+
 paths:
   /login:
     post:
       summary: "librarian login"
       description: "Authenticate librarian credentials and create a session"
       operationId: "Login"
+      tags:
+        - Authentication
+      security: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/LoginRequest"
+            example:
+              user: "admin"
+              pass: "securePasswd"
       responses:
         '200':
           description: "Login successful - session created"
@@ -36,23 +53,50 @@ paths:
                   librarian_id:
                     type: string
                     format: uuid
+              example:
+                message: "Login successful"
+                librarian_id: "12345678-e29b-41d4-a716-446655440000"
         '401':
           description: "Invalid username or password"
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-        default:
+              example:
+                code: 401
+                message: "Invalid credentials"
+        '500':
           description: "An unexpected error occurred."
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /logout:
+    post:
+      summary: "Logout librarian"
+      description: "Invalidate the current session and logout the librarian"
+      operationId: "Logout"
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: "Logout successful"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Logout successful"
+
   /books:
     get:
       summary: "List or search books"
       description: "Retrieve all books or filter by partial title or ID"
       operationId: "ListOrSearchBooks"
+      tags:
+        - Books
       parameters:
         - name: query
           in: query
@@ -90,6 +134,8 @@ paths:
       summary: "Add a new book"
       description: "Register a new book in the library inventory"
       operationId: "AddBook"
+      tags:
+        - Books
       requestBody:
         required: true
         content:
@@ -125,11 +171,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+
   /students:
     get:
       summary: "List all students"
       description: "Retrieve a paginated list of all registered students"
       operationId: "ListAllStudents"
+      tags:
+        - Students
       parameters:
         - $ref: "#/components/parameters/limitParam"
         - $ref: "#/components/parameters/offsetParam"
@@ -161,6 +210,8 @@ paths:
       summary: "Register a new student"
       description: "Add a new student to the system"
       operationId: "AddStudent"
+      tags:
+        - Students
       requestBody:
         required: true
         content:
@@ -196,10 +247,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+
   /students/{id}:
     get:
       summary: "Get a Student by ID"
       operationId: "GetStudentById"
+      tags:
+        - Students
       parameters:
         - name: id
           in: path
@@ -231,10 +285,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+
   /rents:
     post:
       summary: "Rent books for a student"
       operationId: "CreateRentTransaction"
+      tags:
+        - Rents
       requestBody:
         required: true
         content:
@@ -270,6 +327,8 @@ paths:
     get:
       summary: "Get list of all rents with optional filters"
       operationId: "ListRents"
+      tags:
+        - Rents
       parameters:
         - name: book_name
           in: query
@@ -313,10 +372,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+
   /returns:
     get:
       summary: "List books currently rented by a student"
       operationId: "GetRentedBooksByStudent"
+      tags:
+        - Rents
+        - Returns
       parameters:
         - name: student_id
           in: query
@@ -355,6 +418,9 @@ paths:
     put:
       summary: "Mark a cart as returned"
       operationId: "ReturnBooks"
+      tags:
+        - Rents
+        - Returns
       requestBody:
         required: true
         content:
@@ -392,10 +458,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+
   /overdues:
     get:
       summary: "Get list of overdue users"
       operationId: "ListOverdueUsers"
+      tags:
+        - Reports
       parameters:
         - name: student_name
           in: query
@@ -435,6 +504,8 @@ paths:
     get:
       summary: "Get rent statistics report"
       operationId: "GetRentReport"
+      tags:
+        - Reports
       parameters:
         - $ref: "#/components/parameters/limitParam"
         - $ref: "#/components/parameters/offsetParam"
