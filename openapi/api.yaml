@@ -43,7 +43,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          description: "unexpected error"
+          description: "An unexpected error occurred."
           content:
             application/json:
               schema:
@@ -74,8 +74,14 @@ paths:
                     type: array
                     items:
                       $ref: "#/components/schemas/Books"
+        "400":
+          description: "Invalid request parameters"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         default:
-          description: "unexpected error"
+          description: "An unexpected error occurred."
           content:
             application/json:
               schema:
@@ -107,8 +113,14 @@ paths:
                   message:
                     type: string
                     example: "Book added successfully"
+        "400":
+          description: "Invalid request body"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         default:
-          description: "unexpected error"
+          description: "An unexpected error occurred."
           content:
             application/json:
               schema:
@@ -140,7 +152,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
         default:
-          description: "unexpected error"
+          description: "An unexpected error occurred."
           content:
             application/json:
               schema:
@@ -179,7 +191,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
         default:
-          description: "unexpected error"
+          description: "An unexpected error occurred."
           content:
             application/json:
               schema:
@@ -214,7 +226,7 @@ paths:
                     type: string
                     example: "Student not found"
         default:
-          description: "unexpected error"
+          description: "An unexpected error occurred."
           content:
             application/json:
               schema:
@@ -243,6 +255,18 @@ paths:
                   message:
                     type: string
                     example: "Books rented successfully"
+        "400":
+          description: "Invalid request body"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: "An unexpected error occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
     get:
       summary: "Get list of all rents with optional filters"
       operationId: "ListRents"
@@ -277,6 +301,18 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/RentSummary"
+        "400":
+          description: "Invalid request parameters"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: "An unexpected error occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /returns:
     get:
       summary: "List books currently rented by a student"
@@ -304,6 +340,18 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/RentSummary"
+        "400":
+          description: "Invalid request parameters"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: "An unexpected error occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
     put:
       summary: "Mark a cart as returned"
       operationId: "ReturnBooks"
@@ -332,6 +380,18 @@ paths:
                   cart_id:
                     type: string
                     format: uuid
+        "400":
+          description: "Invalid request body"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: "An unexpected error occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /overdues:
     get:
       summary: "Get list of overdue users"
@@ -359,6 +419,18 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/OverdueUser"
+        "400":
+          description: "Invalid request parameters"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: "An unexpected error occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /reports:
     get:
       summary: "Get rent statistics report"
@@ -373,6 +445,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/RentReport"
+        "400":
+          description: "Invalid request parameters"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: "An unexpected error occurred."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
 components:
   schemas:
@@ -390,6 +474,7 @@ components:
       required:
         - user
         - pass
+
     RentRequest:
       type: object
       properties:
@@ -404,6 +489,7 @@ components:
       required:
         - student_id
         - book_ids
+
     RentSummary:
       type: object
       properties:
@@ -420,6 +506,7 @@ components:
         rented_date:
           type: string
           format: date-time
+
     OverdueUser:
       type: object
       properties:
@@ -434,6 +521,7 @@ components:
           format: date-time
         days_overdue:
           type: integer
+
     BookRentStats:
       type: object
       properties:
@@ -472,6 +560,7 @@ components:
         count:
           type: integer
           nullable: false
+
     Students:
       x-go-type: models.Students
       x-go-type-import:
@@ -494,6 +583,7 @@ components:
         phone:
           type: string
           nullable: false
+
     Rents:
       x-go-type: models.Rents
       x-go-type-import:
@@ -510,6 +600,7 @@ components:
         book_id:
           type: string
           format: uuid
+
     Carts:
       x-go-type: models.Carts
       x-go-type-import:
@@ -528,6 +619,7 @@ components:
           enum:
             - RENTED
             - RETURNED
+
     Error:
       required:
         - code
@@ -540,6 +632,7 @@ components:
         message:
           type: string
           description: Error message
+
   parameters:
     offsetParam:
       name: offset
