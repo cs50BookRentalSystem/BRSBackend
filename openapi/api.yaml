@@ -90,7 +90,7 @@ paths:
 
   /books:
     get:
-      summary: "List or search books"
+      summary: "List or search books (order by newly created books)"
       description: "Retrieve all books or filter by partial title or ID"
       operationId: "ListOrSearchBooks"
       tags:
@@ -119,6 +119,8 @@ paths:
                     type: array
                     items:
                       $ref: "#/components/schemas/Books"
+                  pagination:
+                    $ref: '#/components/schemas/PaginationInfo'
         '400':
           $ref: '#/components/responses/InvalidRequestParameters'
         '401':
@@ -137,6 +139,10 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Books'
+            example:
+              title: "The Great Gatsby"
+              description: "The Great Gatsby, novel by American author F. Scott Fitzgerald, published in 1925."
+              count: 5
       responses:
         '201':
           description: "Book added successfully"
@@ -146,6 +152,7 @@ paths:
               schema:
                 type: string
                 format: uri
+              example: "/books"
           content:
             application/json:
               schema:
@@ -183,6 +190,8 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Students'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationInfo'
         '400':
           $ref: '#/components/responses/InvalidRequestParameters'
         '401':
@@ -228,6 +237,7 @@ paths:
   /students/{id}:
     get:
       summary: "Get a Student by ID"
+      description: "Retrieve detailed information about a specific student"
       operationId: "GetStudentById"
       tags:
         - Students
@@ -263,7 +273,8 @@ paths:
 
   /rents:
     post:
-      summary: "Rent books for a student"
+      summary: "Create rental transaction"
+      description: "Rent one or more books to a student"
       operationId: "CreateRentTransaction"
       tags:
         - Rents
@@ -273,9 +284,12 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/RentRequest'
+            example:
+              student_id: "87654321-e29b-41d4-a716-446655440002"
+              book_ids: [ "12345678-e29b-41d4-a716-446655440001", "02345679-e29b-41d4-a716-446655440001"]
       responses:
         '201':
-          description: "Rent created"
+          description: "Rent created successfully"
           content:
             application/json:
               schema:
@@ -363,9 +377,14 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/RentSummary'
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RentSummary'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationInfo'
         '400':
           $ref: '#/components/responses/InvalidRequestParameters'
         '401':
@@ -412,8 +431,9 @@ paths:
 
   /overdues:
     get:
-      summary: "Get list of overdue users"
-      operationId: "ListOverdueUsers"
+      summary: "Get overdue rentals"
+      description: "List students with overdue book rentals"
+      operationId: "ListOverdueRentals"
       tags:
         - Reports
       parameters:
@@ -436,9 +456,14 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/OverdueUser"
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/OverdueUser"
+                  pagination:
+                    $ref: '#/components/schemas/PaginationInfo'
         '400':
           $ref: '#/components/responses/InvalidRequestParameters'
         '401':
@@ -447,8 +472,9 @@ paths:
           $ref: '#/components/responses/InternalServerError'
   /reports:
     get:
-      summary: "Get rent statistics report"
-      operationId: "GetRentReport"
+      summary: "Get rental report"
+      description: "Retrieve comprehensive rental statistics and reports"
+      operationId: "GetRentalReports"
       tags:
         - Reports
       parameters:
@@ -550,7 +576,7 @@ components:
         top_books:
           type: array
           items:
-            $ref: "#/components/schemas/BookRentStats"
+            $ref: '#/components/schemas/BookRentStats'
 
     Books:
       x-go-type: models.Books
@@ -642,6 +668,28 @@ components:
         message:
           type: string
           description: Error message
+
+    PaginationInfo:
+      type: object
+      properties:
+        offset:
+          type: integer
+          minimum: 0
+          description: Number of items skipped
+        limit:
+          type: integer
+          minimum: 1
+          description: Maximum number of items returned
+        total:
+          type: integer
+          minimum: 0
+          description: Total number of items available
+        has_next:
+          type: boolean
+          description: Whether there are more items available
+        has_previous:
+          type: boolean
+          description: Whether there are previous items available
 
   parameters:
     offsetParam:
