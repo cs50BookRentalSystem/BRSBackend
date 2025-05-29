@@ -364,12 +364,6 @@ paths:
           required: false
           schema:
             type: string
-        - name: student_name
-          in: query
-          description: "Partial name of the student (first or last)"
-          required: false
-          schema:
-            type: string
       responses:
         '200':
           description: "List of currently rented books by student"
@@ -436,7 +430,7 @@ paths:
       tags:
         - Reports
       parameters:
-        - name: student_name
+        - name: student_card_id
           in: query
           required: false
           schema:
