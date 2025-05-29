@@ -358,13 +358,12 @@ paths:
         - Rents
         - Returns
       parameters:
-        - name: student_id
+        - name: student_card_id
           in: query
-          description: "Student UUID"
+          description: "Student card id"
           required: false
           schema:
             type: string
-            format: uuid
         - name: student_name
           in: query
           description: "Partial name of the student (first or last)"
@@ -442,12 +441,6 @@ paths:
           required: false
           schema:
             type: string
-        - name: student_id
-          in: query
-          required: false
-          schema:
-            type: string
-            format: uuid
         - $ref: "#/components/parameters/limitParam"
         - $ref: "#/components/parameters/offsetParam"
       responses:
@@ -607,6 +600,8 @@ components:
         id:
           type: string
           format: uuid
+        student_card_id:
+          type: string
         firstName:
           type: string
           nullable: false
