@@ -566,9 +566,9 @@ components:
             $ref: '#/components/schemas/BookRentStats'
 
     Books:
-      x-go-type: models.Books
+      x-go-type: models.Book
       x-go-type-import:
-        name: Books
+        name: Book
         path: BRSBackend/pkg/models
       type: object
       properties:
@@ -585,9 +585,9 @@ components:
           nullable: false
 
     Students:
-      x-go-type: models.Students
+      x-go-type: models.Student
       x-go-type-import:
-        name: Students
+        name: Student
         path: BRSBackend/pkg/models
       type: object
       properties:
@@ -610,9 +610,9 @@ components:
           nullable: false
 
     Rents:
-      x-go-type: models.Rents
+      x-go-type: models.Rent
       x-go-type-import:
-        name: Rents
+        name: Rent
         path: BRSBackend/pkg/models
       type: object
       properties:
@@ -627,9 +627,9 @@ components:
           format: uuid
 
     Carts:
-      x-go-type: models.Carts
+      x-go-type: models.Cart
       x-go-type-import:
-        name: Rents
+        name: Cart
         path: BRSBackend/pkg/models
       type: object
       properties:
