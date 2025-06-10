@@ -47,11 +47,19 @@ func (c cartRepository) GetByStatus(ctx context.Context, status string) ([]*mode
 }
 
 func (c cartRepository) Update(ctx context.Context, cart *models.Cart) error {
-	panic("implement me")
+	if err := c.db.WithContext(ctx).Save(cart).Error; err != nil {
+		return fmt.Errorf("failed to update cart: %w", err)
+	}
+	return nil
 }
 
 func (c cartRepository) UpdateStatus(ctx context.Context, cartID uuid.UUID, status string) error {
-	panic("implement me")
+	if err := c.db.WithContext(ctx).Model(&models.Cart{}).
+		Where("id = ?", cartID).
+		Update("status", status).Error; err != nil {
+		return fmt.Errorf("failed to update cart status: %w", err)
+	}
+	return nil
 }
 
 func NewCartRepository(db *gorm.DB) repository.CartRepository {
