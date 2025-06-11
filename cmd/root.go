@@ -4,24 +4,28 @@ Copyright © 2025 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"fmt"
+	"log"
+	"net"
+	"net/http"
 	"os"
 
+	"github.com/go-chi/chi/v5"
+	middleware "github.com/oapi-codegen/nethttp-middleware"
 	"github.com/spf13/cobra"
+
+	"BRSBackend/pkg/api"
+	"BRSBackend/pkg/config"
+	"BRSBackend/pkg/handlers"
+	"BRSBackend/pkg/repository/sqlite"
+	"BRSBackend/pkg/services"
 )
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "BRSBackend",
 	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	Run:   runCommand,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -43,4 +47,37 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+}
+
+func runCommand(cmd *cobra.Command, args []string) {
+	db, err := config.NewDatabase("./")
+	if err != nil {
+		panic("Failed to connect database")
+	}
+	defer db.Close()
+
+	repo := sqlite.NewRepository(db.DB)
+	svc := services.NewBookService(repo.Book)
+	h := handlers.NewBookHandler(svc)
+
+	swagger, err := api.GetSwagger()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error loading swagger spec\n: %s", err)
+		os.Exit(1)
+	}
+
+	// Clear out the servers array in the swagger spec, that skips validating
+	// that server names match. We don't know how this thing will be run.
+	swagger.Servers = nil
+
+	r := chi.NewRouter()
+	r.Use(middleware.OapiRequestValidator(swagger))
+	api.HandlerFromMux(h, r)
+
+	s := &http.Server{
+		Handler: r,
+		Addr:    net.JoinHostPort("0.0.0.0", "8080"),
+	}
+
+	log.Fatal(s.ListenAndServe())
 }

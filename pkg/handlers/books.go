@@ -3,21 +3,13 @@ package handlers
 import (
 	_ "context"
 	"encoding/json"
-	"flag"
-	"fmt"
-	"net"
 	"net/http"
-	"os"
 
-	"github.com/go-chi/chi/v5"
-	middleware "github.com/oapi-codegen/nethttp-middleware"
 	openapi_types "github.com/oapi-codegen/runtime/types"
-	"gorm.io/gorm"
 
 	"BRSBackend/pkg/api"
 	"BRSBackend/pkg/models"
 	_ "BRSBackend/pkg/repository"
-	"BRSBackend/pkg/repository/sqlite"
 	"BRSBackend/pkg/services"
 )
 
@@ -127,37 +119,4 @@ func (h *BookHandler) AddStudent(w http.ResponseWriter, r *http.Request) {
 // (GET /students/{id})
 func (h *BookHandler) GetStudentById(w http.ResponseWriter, r *http.Request, id openapi_types.UUID) {
 	panic("implement me")
-}
-
-func main() {
-	port := flag.String("port", "8080", "Port for test HTTP server")
-	flag.Parse()
-
-	swagger, err := api.GetSwagger()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error loading swagger spec\n: %s", err)
-		os.Exit(1)
-	}
-
-	// Clear out the servers array in the swagger spec, that skips validating
-	// that server names match. We don't know how this thing will be run.
-	swagger.Servers = nil
-
-	a := sqlite.NewBookRepository(&gorm.DB{})
-
-	b := services.NewBookService(a)
-	petStore := NewBookHandler(b)
-
-	r := chi.NewRouter()
-	r.Use(middleware.OapiRequestValidator(swagger))
-	api.HandlerFromMux(petStore, r)
-
-	s := &http.Server{
-		Handler: r,
-		Addr:    net.JoinHostPort("0.0.0.0", *port),
-	}
-	err = s.ListenAndServe()
-	if err != nil {
-		return
-	}
 }
