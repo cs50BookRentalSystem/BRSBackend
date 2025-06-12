@@ -11,7 +11,6 @@ import (
 	"os"
 
 	"github.com/go-chi/chi/v5"
-	middleware "github.com/oapi-codegen/nethttp-middleware"
 	"github.com/spf13/cobra"
 
 	"BRSBackend/pkg/api"
@@ -50,11 +49,13 @@ func init() {
 }
 
 func runCommand(cmd *cobra.Command, args []string) {
-	db, err := config.NewDatabase("./")
+	db, err := config.NewDatabase("./identifier.sqlite")
 	if err != nil {
 		panic("Failed to connect database")
 	}
 	defer db.Close()
+
+	db.AutoMigrate()
 
 	repo := sqlite.NewRepository(db.DB)
 	svc := services.NewBookService(repo.Book)
@@ -71,7 +72,7 @@ func runCommand(cmd *cobra.Command, args []string) {
 	swagger.Servers = nil
 
 	r := chi.NewRouter()
-	r.Use(middleware.OapiRequestValidator(swagger))
+	//r.Use(middleware.OapiRequestValidator(swagger))
 	api.HandlerFromMux(h, r)
 
 	s := &http.Server{

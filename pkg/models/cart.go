@@ -6,8 +6,16 @@ import (
 )
 
 type Cart struct {
-	gorm.Model
-	Id        uuid.UUID `gorm:"primaryKey;type:uuid;default:uuid_generate_v4()"`
-	StudentId uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
-	Status    string    `gorm:"type:text;default:'RENTED'"`
+	gorm.Model `json:"-"`
+	Id         uuid.UUID `gorm:"primaryKey;type:uuid;default:(gen_random_uuid())" json:"id"`
+	StudentId  uuid.UUID `gorm:"type:uuid;" json:"student_id"`
+	Status     string    `gorm:"type:text;default:'RENTED'" json:"status"`
 }
+
+//func (b *Cart) BeforeCreate(tx *gorm.DB) (err error) {
+//	b.Id, err = uuid.NewUUID()
+//	if err != nil {
+//		return err
+//	}
+//	return nil
+//}

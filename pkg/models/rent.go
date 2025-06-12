@@ -6,8 +6,16 @@ import (
 )
 
 type Rent struct {
-	gorm.Model
-	Id     uuid.UUID `gorm:"primaryKey;type:uuid;default:uuid_generate_v4()"`
-	CartId uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
-	BookId uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()"`
+	gorm.Model `json:"-"`
+	Id         uuid.UUID `gorm:"primaryKey;type:uuid;default:(gen_random_uuid())" json:"id"`
+	CartId     uuid.UUID `gorm:"type:uuid;" json:"cart_id"`
+	BookId     uuid.UUID `gorm:"type:uuid;" json:"book_id"`
 }
+
+//func (b *Rent) BeforeCreate(tx *gorm.DB) (err error) {
+//	b.Id, err = uuid.NewUUID()
+//	if err != nil {
+//		return err
+//	}
+//	return nil
+//}

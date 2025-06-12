@@ -6,14 +6,14 @@ import (
 
 	"github.com/google/uuid"
 
+	"BRSBackend/pkg/dto"
 	"BRSBackend/pkg/models"
 )
 
 type BookRepository interface {
 	Create(ctx context.Context, book *models.Book) error
-	GetByID(ctx context.Context, id string) (*models.Book, error)
-	GetAll(ctx context.Context, offset, limit int) ([]*models.Book, int64, error)
-	SearchByTitle(ctx context.Context, title string, offset, limit int) ([]*models.Book, int64, error)
+	GetByID(ctx context.Context, id uuid.UUID) (*models.Book, error)
+	GetAll(ctx context.Context, params dto.PaginationParams) ([]*models.Book, int64, error)
 	Update(ctx context.Context, book *models.Book) error
 	Delete(ctx context.Context, id uuid.UUID) error
 }

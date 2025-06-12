@@ -1,11 +1,14 @@
 package config
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"os"
 	"time"
 
+	"github.com/google/uuid"
+	sqliteGo "github.com/mattn/go-sqlite3"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -19,6 +22,27 @@ type Database struct {
 
 func NewDatabase(dbPath string) (*Database, error) {
 
+	const CustomDriverName = "sqlite3_extended"
+	sql.Register(CustomDriverName,
+		&sqliteGo.SQLiteDriver{
+			ConnectHook: func(conn *sqliteGo.SQLiteConn) error {
+				err := conn.RegisterFunc(
+					"gen_random_uuid",
+					func(arguments ...interface{}) (string, error) {
+						return uuid.New().String(), nil
+					},
+					true,
+				)
+				return err
+			},
+		},
+	)
+
+	conn, err := sql.Open(CustomDriverName, dbPath)
+	if err != nil {
+		panic(err)
+	}
+
 	newLogger := logger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags),
 		logger.Config{
@@ -29,9 +53,23 @@ func NewDatabase(dbPath string) (*Database, error) {
 		},
 	)
 
-	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{
-		Logger: newLogger,
+	//db, err := gorm.Open(sqlite.Dialector{
+	//	DriverName: CustomDriverName,
+	//	DSN:        dbPath,
+	//	Conn: conn,, &gorm.Config{
+	//	Logger: newLogger,
+	//})
+
+	db, err := gorm.Open(sqlite.Dialector{
+		DriverName: CustomDriverName,
+		DSN:        dbPath,
+		Conn:       conn,
+	}, &gorm.Config{
+		Logger:                   newLogger,
+		SkipDefaultTransaction:   true,
+		DisableNestedTransaction: true,
 	})
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}

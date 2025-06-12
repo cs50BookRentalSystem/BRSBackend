@@ -6,9 +6,17 @@ import (
 )
 
 type Book struct {
-	gorm.Model
-	Id          uuid.UUID `gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
-	Title       string    `gorm:"type:varchar(255);not null"`
-	Description string    `gorm:"type:text;not null"`
-	Count       int       `gorm:"type:int;not null"`
+	gorm.Model  `json:"-"`
+	Id          uuid.UUID `gorm:"primaryKey;type:uuid;default:(gen_random_uuid())" json:"id"`
+	Title       string    `gorm:"type:varchar(255);not null" json:"title"`
+	Description string    `gorm:"type:text;not null" json:"description"`
+	Count       int       `gorm:"type:int;not null" json:"count"`
 }
+
+//func (b *Book) BeforeCreate(tx *gorm.DB) (err error) {
+//	b.Id, err = uuid.NewUUID()
+//	if err != nil {
+//		return err
+//	}
+//	return nil
+//}
