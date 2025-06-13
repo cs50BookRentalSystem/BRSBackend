@@ -14,11 +14,3 @@ type Student struct {
 	Major      string    `gorm:"type:varchar(255);not null" json:"major"`
 	Phone      string    `gorm:"type:varchar(255);not null" json:"phone"`
 }
-
-//func (b *Student) BeforeCreate(tx *gorm.DB) (err error) {
-//	b.Id, err = uuid.NewUUID()
-//	if err != nil {
-//		return err
-//	}
-//	return nil
-//}

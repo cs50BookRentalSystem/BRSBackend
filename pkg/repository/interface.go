@@ -30,7 +30,7 @@ type StudentRepository interface {
 type LibrarianRepository interface {
 	Create(ctx context.Context, librarian *models.Librarian) error
 	GetByID(ctx context.Context, id uuid.UUID) (*models.Librarian, error)
-	Update(ctx context.Context, librarian *models.Librarian) error
+	GetByUsername(ctx context.Context, username string) (*models.Librarian, error)
 }
 
 type CartRepository interface {
@@ -50,6 +50,14 @@ type RentRepository interface {
 	GetOverdueRentals(ctx context.Context, studentCardID string, offset, limit int) ([]*OverdueUser, int64, error)
 	GetRentalReport(ctx context.Context) (*RentReport, error)
 	SearchRents(ctx context.Context, bookName, studentName string, date *time.Time, offset, limit int) ([]*RentSummary, int64, error)
+}
+
+type SessionRepository interface {
+	Create(ctx context.Context, session *models.Session) error
+	GetByID(ctx context.Context, sessionId string) (*models.Session, error)
+	DeleteByID(ctx context.Context, sessionId string) error
+	DeleteExpired() error
+	DeleteByLibrarianID(ctx context.Context, librarianId uuid.UUID) error
 }
 
 type RentSummary struct {
@@ -85,4 +93,5 @@ type Repository struct {
 	Librarian LibrarianRepository
 	Cart      CartRepository
 	Rent      RentRepository
+	Session   SessionRepository
 }

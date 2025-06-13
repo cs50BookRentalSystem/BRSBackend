@@ -12,11 +12,3 @@ type Book struct {
 	Description string    `gorm:"type:text;not null" json:"description"`
 	Count       int       `gorm:"type:int;not null" json:"count"`
 }
-
-//func (b *Book) BeforeCreate(tx *gorm.DB) (err error) {
-//	b.Id, err = uuid.NewUUID()
-//	if err != nil {
-//		return err
-//	}
-//	return nil
-//}

@@ -13,5 +13,6 @@ func NewRepository(db *gorm.DB) *repository.Repository {
 		Librarian: NewLibrarianRepository(db),
 		Cart:      NewCartRepository(db),
 		Rent:      NewRentRepository(db),
+		Session:   NewSessionRepository(db),
 	}
 }

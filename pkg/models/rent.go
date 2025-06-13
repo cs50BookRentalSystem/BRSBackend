@@ -11,11 +11,3 @@ type Rent struct {
 	CartId     uuid.UUID `gorm:"type:uuid;" json:"cart_id"`
 	BookId     uuid.UUID `gorm:"type:uuid;" json:"book_id"`
 }
-
-//func (b *Rent) BeforeCreate(tx *gorm.DB) (err error) {
-//	b.Id, err = uuid.NewUUID()
-//	if err != nil {
-//		return err
-//	}
-//	return nil
-//}
