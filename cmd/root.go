@@ -16,6 +16,7 @@ import (
 	"BRSBackend/pkg/api"
 	"BRSBackend/pkg/config"
 	"BRSBackend/pkg/handlers"
+	"BRSBackend/pkg/middleware"
 	"BRSBackend/pkg/repository/sqlite"
 	"BRSBackend/pkg/services"
 )
@@ -58,8 +59,16 @@ func runCommand(cmd *cobra.Command, args []string) {
 	db.AutoMigrate()
 
 	repo := sqlite.NewRepository(db.DB)
+	librarianRepo := sqlite.NewLibrarianRepository(db.DB)
+	sessionRepo := sqlite.NewSessionRepository(db.DB)
+
+	authService := services.NewAuthService(librarianRepo, sessionRepo)
 	svc := services.NewBookService(repo.Book)
+
+	config.SeedDefaultLibrarian(authService)
+
 	h := handlers.NewBookHandler(svc)
+	authHandler := handlers.NewAuthHandler(authService)
 
 	swagger, err := api.GetSwagger()
 	if err != nil {
@@ -72,8 +81,16 @@ func runCommand(cmd *cobra.Command, args []string) {
 	swagger.Servers = nil
 
 	r := chi.NewRouter()
-	//r.Use(middleware.OapiRequestValidator(swagger))
-	api.HandlerFromMux(h, r)
+	r.Post("/login", authHandler.Login)
+	r.Post("/logout", authHandler.Logout)
+	r.Group(func(r chi.Router) {
+		// Apply auth middleware to protect API routes
+		r.Use(middleware.AuthMiddleware(authService))
+		//r.Use(middleware.OapiRequestValidator(swagger))
+		// Register your generated API routes (these require authentication)
+		api.HandlerFromMux(h, r)
+	})
+	//
 
 	s := &http.Server{
 		Handler: r,

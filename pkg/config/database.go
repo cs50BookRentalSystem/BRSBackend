@@ -97,6 +97,7 @@ func (db *Database) AutoMigrate() error {
 		&models.Student{},
 		&models.Cart{},
 		&models.Rent{},
+		&models.Session{},
 	)
 	if err != nil {
 		return fmt.Errorf("failed to migrate database: %w", err)
