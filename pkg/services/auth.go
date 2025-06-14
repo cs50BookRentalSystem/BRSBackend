@@ -20,6 +20,7 @@ type AuthService interface {
 	ValidateSession(ctx context.Context, sessionId string) (*models.Librarian, error)
 	Logout(ctx context.Context, sessionId string) error
 	CreateLibrarian(ctx context.Context, username, password string) error
+	CleanupExpiredSessions() error
 }
 
 type authService struct {

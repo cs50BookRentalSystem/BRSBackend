@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/spf13/cobra"
@@ -79,13 +80,21 @@ func runCommand(cmd *cobra.Command, args []string) {
 	r.Post("/login", h.Login)
 	r.Post("/logout", h.Logout)
 	r.Group(func(r chi.Router) {
-		// Apply auth middleware to protect API routes
 		r.Use(middleware.AuthMiddleware(svc.Auth))
 		//r.Use(middleware.OapiRequestValidator(swagger))
-		// Register your generated API routes (these require authentication)
 		api.HandlerFromMux(h, r)
 	})
-	//
+
+	go func() {
+		ticker := time.NewTicker(1 * time.Hour)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				svc.Auth.CleanupExpiredSessions()
+			}
+		}
+	}()
 
 	s := &http.Server{
 		Handler: r,

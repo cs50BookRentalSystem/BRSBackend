@@ -20,3 +20,8 @@ type BooksResponse struct {
 	Results    []*models.Book `json:"results"`
 	Pagination PaginationInfo `json:"pagination"`
 }
+
+type StudentsResponse struct {
+	Results    []*models.Student `json:"results"`
+	Pagination PaginationInfo    `json:"pagination"`
+}
