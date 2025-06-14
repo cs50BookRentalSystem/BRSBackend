@@ -6,30 +6,9 @@ import (
 	"time"
 
 	"BRSBackend/pkg/dto"
-	"BRSBackend/pkg/services"
 )
 
-type AuthHandler struct {
-	authService services.AuthService
-}
-
-func (h *AuthHandler) writeErrorResponse(w http.ResponseWriter, statusCode int, message string) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCode)
-	json.NewEncoder(w).Encode(ErrorResponse{Message: message, Code: statusCode})
-}
-
-func (h *AuthHandler) writeResponse(w http.ResponseWriter, statusCode int, response any) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCode)
-	json.NewEncoder(w).Encode(response)
-}
-
-func NewAuthHandler(authService services.AuthService) *AuthHandler {
-	return &AuthHandler{authService: authService}
-}
-
-func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	var loginReq dto.LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&loginReq); err != nil {
 		h.writeErrorResponse(w, http.StatusBadRequest, "Invalid request body")
@@ -61,7 +40,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	h.writeResponse(w, http.StatusOK, response)
 }
 
-func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("session_id")
 	if err == nil {
 		h.authService.Logout(r.Context(), cookie.Value)
