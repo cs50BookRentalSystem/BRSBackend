@@ -8,14 +8,16 @@ import (
 )
 
 type Handler struct {
-	bookService services.BookService
-	authService services.AuthService
+	bookService    services.BookService
+	authService    services.AuthService
+	studentService services.StudentService
 }
 
 func NewHandler(svc *services.Service) *Handler {
 	return &Handler{
-		bookService: svc.Book,
-		authService: svc.Auth,
+		bookService:    svc.Book,
+		authService:    svc.Auth,
+		studentService: svc.Student,
 	}
 }
 

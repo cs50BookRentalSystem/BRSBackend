@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"net/http"
 
-	oapiTypes "github.com/oapi-codegen/runtime/types"
-
 	"BRSBackend/pkg/api"
 	"BRSBackend/pkg/dto"
 	"BRSBackend/pkg/models"
@@ -47,6 +45,7 @@ import (
 func (h *Handler) AddBook(w http.ResponseWriter, r *http.Request) {
 
 	var book models.Book
+
 	if err := json.NewDecoder(r.Body).Decode(&book); err != nil {
 		h.writeErrorResponse(w, http.StatusBadRequest, "Invalid request body")
 		return
@@ -90,26 +89,26 @@ func (h *Handler) ListOrSearchBooks(w http.ResponseWriter, r *http.Request, para
 		}
 	}
 
-	response, err := h.bookService.GetAllBooks(r.Context(), paginationParams)
+	allBooks, err := h.bookService.GetAllBooks(r.Context(), paginationParams)
 	if err != nil {
 		h.writeErrorResponse(w, http.StatusInternalServerError, "Failed to retrieve books")
 		return
 	}
 
-	apiBooks := make([]api.Books, len(response.Results))
-	for i, book := range response.Results {
-		apiBooks[i] = *book
+	books := make([]api.Books, len(allBooks.Results))
+	for i, book := range allBooks.Results {
+		books[i] = *book
 	}
 
 	apiPagination := &api.PaginationInfo{
-		Offset:      &response.Pagination.Offset,
-		Limit:       &response.Pagination.Limit,
-		Total:       &response.Pagination.Total,
-		HasNext:     &response.Pagination.HasNext,
-		HasPrevious: &response.Pagination.HasPrevious,
+		Offset:      &allBooks.Pagination.Offset,
+		Limit:       &allBooks.Pagination.Limit,
+		Total:       &allBooks.Pagination.Total,
+		HasNext:     &allBooks.Pagination.HasNext,
+		HasPrevious: &allBooks.Pagination.HasPrevious,
 	}
 
-	h.writeResponse(w, http.StatusOK, api.ListOrSearchBooks200JSONResponse{Results: &apiBooks, Pagination: apiPagination})
+	h.writeResponse(w, http.StatusOK, api.ListOrSearchBooks200JSONResponse{Results: &books, Pagination: apiPagination})
 
 }
 
@@ -134,17 +133,5 @@ func (h *Handler) GetRentedBooksByStudent(w http.ResponseWriter, r *http.Request
 }
 
 func (h *Handler) ReturnBooks(w http.ResponseWriter, r *http.Request) {
-	panic("implement me")
-}
-
-func (h *Handler) ListAllStudents(w http.ResponseWriter, r *http.Request, params api.ListAllStudentsParams) {
-	panic("implement me")
-}
-
-func (h *Handler) AddStudent(w http.ResponseWriter, r *http.Request) {
-	panic("implement me")
-}
-
-func (h *Handler) GetStudentById(w http.ResponseWriter, r *http.Request, id oapiTypes.UUID) {
 	panic("implement me")
 }

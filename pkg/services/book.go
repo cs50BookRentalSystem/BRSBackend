@@ -17,49 +17,40 @@ type BookService interface {
 	GetAllBooks(ctx context.Context, params dto.PaginationParams) (*dto.BooksResponse, error)
 }
 
-type CreateBookRequest struct {
-	Title       string `json:"title" validate:"required,min=1,max=255"`
-	Description string `json:"description" validate:"required,min=1"`
-	Count       int    `json:"count" validate:"required,min=0"`
-}
-
-type UpdateBookRequest struct {
-	Title       *string `json:"title,omitempty" validate:"omitempty,min=1,max=255"`
-	Description *string `json:"description,omitempty" validate:"omitempty,min=1"`
-	Count       *int    `json:"count,omitempty" validate:"omitempty,min=0"`
-}
-
-type PaginatedBooksResponse struct {
-	Books      []*models.Book `json:"books"`
-	Page       int            `json:"page"`
-	PageSize   int            `json:"page_size"`
-	TotalItems int            `json:"total_items"`
-	HasMore    bool           `json:"has_more"`
-}
-
 type bookService struct {
 	repo repository.BookRepository
 }
 
+func NewBookService(repo repository.BookRepository) BookService {
+	return &bookService{
+		repo: repo,
+	}
+}
+
 func (b *bookService) CreateBook(ctx context.Context, book *models.Book) error {
+
 	if book.Title == "" {
 		return fmt.Errorf("book title is required")
 	}
 	if book.Count < 0 {
 		return fmt.Errorf("book cannot be negative")
 	}
+
 	return b.repo.Create(ctx, book)
 }
 
 func (b *bookService) GetBookByID(ctx context.Context, uid string) (*models.Book, error) {
+
 	id, err := uuid.Parse(uid)
 	if err != nil {
 		return nil, fmt.Errorf("invalid id format: %w", err)
 	}
+
 	return b.repo.GetByID(ctx, id)
 }
 
 func (b *bookService) GetAllBooks(ctx context.Context, params dto.PaginationParams) (*dto.BooksResponse, error) {
+
 	if params.Limit <= 0 {
 		params.Limit = 10
 	}
@@ -89,10 +80,4 @@ func (b *bookService) GetAllBooks(ctx context.Context, params dto.PaginationPara
 	}
 
 	return response, nil
-}
-
-func NewBookService(repo repository.BookRepository) BookService {
-	return &bookService{
-		repo: repo,
-	}
 }
