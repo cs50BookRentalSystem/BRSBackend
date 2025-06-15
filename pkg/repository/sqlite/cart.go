@@ -46,6 +46,11 @@ func (c cartRepository) GetByStatus(ctx context.Context, status string) ([]*mode
 	return carts, nil
 }
 
+func (c cartRepository) GetCartsByStudentID(ctx context.Context, studentID uuid.UUID) ([]*models.Cart, error) {
+	var carts []*models.Cart
+	return carts, c.db.WithContext(ctx).Where("student_id = ?", studentID).Find(&carts).Error
+}
+
 func (c cartRepository) Update(ctx context.Context, cart *models.Cart) error {
 	if err := c.db.WithContext(ctx).Save(cart).Error; err != nil {
 		return fmt.Errorf("failed to update cart: %w", err)

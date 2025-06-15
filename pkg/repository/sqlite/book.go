@@ -67,6 +67,11 @@ func (b *bookRepository) GetAll(ctx context.Context, params dto.PaginationParams
 	return books, total, nil
 }
 
+func (b *bookRepository) GetBooksByIDs(ctx context.Context, bookIDs []uuid.UUID) ([]*models.Book, error) {
+	var books []*models.Book
+	return books, b.db.WithContext(ctx).Where("id IN ?", bookIDs).Find(&books).Error
+}
+
 func (b *bookRepository) Update(ctx context.Context, book *models.Book) error {
 	panic("implement me")
 }

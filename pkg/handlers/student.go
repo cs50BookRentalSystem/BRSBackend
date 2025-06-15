@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	oapiTypes "github.com/oapi-codegen/runtime/types"
@@ -13,10 +12,12 @@ import (
 )
 
 func (h *Handler) ListAllStudents(w http.ResponseWriter, r *http.Request, params api.ListAllStudentsParams) {
+
 	paginationParams := dto.PaginationParams{
 		Limit:  10,
 		Offset: 0,
 	}
+
 	if limitStr := r.URL.Query().Get("limit"); limitStr != "" {
 		if params.Limit != nil && int(*params.Limit) > 0 {
 			paginationParams.Limit = int(*params.Limit)
@@ -63,7 +64,6 @@ func (h *Handler) AddStudent(w http.ResponseWriter, r *http.Request) {
 		h.writeErrorResponse(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
-	fmt.Printf("h AddStudent: %+v\n", student)
 
 	if err := h.studentService.CreateStudent(r.Context(), &student); err != nil {
 		h.writeErrorResponse(w, http.StatusBadRequest, err.Error())

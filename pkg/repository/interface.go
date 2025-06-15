@@ -14,6 +14,7 @@ type BookRepository interface {
 	Create(ctx context.Context, book *models.Book) error
 	GetByID(ctx context.Context, id uuid.UUID) (*models.Book, error)
 	GetAll(ctx context.Context, params dto.PaginationParams) ([]*models.Book, int64, error)
+	GetBooksByIDs(ctx context.Context, bookIDs []uuid.UUID) ([]*models.Book, error)
 	Update(ctx context.Context, book *models.Book) error
 	Delete(ctx context.Context, id uuid.UUID) error
 }
@@ -37,15 +38,16 @@ type CartRepository interface {
 	Create(ctx context.Context, cart *models.Cart) error
 	GetByID(ctx context.Context, id uuid.UUID) (*models.Cart, error)
 	GetByStatus(ctx context.Context, status string) ([]*models.Cart, error)
-	Update(ctx context.Context, cart *models.Cart) error
+	GetCartsByStudentID(ctx context.Context, studentID uuid.UUID) ([]*models.Cart, error)
 	UpdateStatus(ctx context.Context, cartID uuid.UUID, status string) error
 }
 
 type RentRepository interface {
 	Create(ctx context.Context, rent *models.Rent) error
 	GetByID(ctx context.Context, id uuid.UUID) (*models.Rent, error)
-	GetByCartId(ctx context.Context, cartID uuid.UUID) ([]*models.Rent, error)
-	GetAll(ctx context.Context, offset, limit int) ([]*models.Rent, int64, error)
+	GetRentsByFilters(ctx context.Context, filters dto.RentFilters) ([]*dto.RentSummary, error)
+	GetRentedBooksByStudent(ctx context.Context, studentCardID string) ([]*dto.RentSummary, error)
+	GetRentsByCartID(ctx context.Context, cartID uuid.UUID) ([]*models.Rent, error)
 	GetRentedBooks(ctx context.Context, studentCardID string) ([]*RentSummary, error)
 	GetOverdueRentals(ctx context.Context, studentCardID string, offset, limit int) ([]*OverdueUser, int64, error)
 	GetRentalReport(ctx context.Context) (*RentReport, error)

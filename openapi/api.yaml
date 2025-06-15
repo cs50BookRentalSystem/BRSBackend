@@ -340,9 +340,14 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/RentSummary'
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RentSummary'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationInfo'
         '400':
           $ref: '#/components/responses/InvalidRequestParameters'
         '401':

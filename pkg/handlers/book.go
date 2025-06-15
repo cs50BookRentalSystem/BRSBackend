@@ -116,22 +116,6 @@ func (h *Handler) ListOverdueRentals(w http.ResponseWriter, r *http.Request, par
 	panic("implement me")
 }
 
-func (h *Handler) ListRents(w http.ResponseWriter, r *http.Request, params api.ListRentsParams) {
-	panic("implement me")
-}
-
-func (h *Handler) CreateRentTransaction(w http.ResponseWriter, r *http.Request) {
-	panic("implement me")
-}
-
 func (h *Handler) GetRentalReports(w http.ResponseWriter, r *http.Request, params api.GetRentalReportsParams) {
-	panic("implement me")
-}
-
-func (h *Handler) GetRentedBooksByStudent(w http.ResponseWriter, r *http.Request, params api.GetRentedBooksByStudentParams) {
-	panic("implement me")
-}
-
-func (h *Handler) ReturnBooks(w http.ResponseWriter, r *http.Request) {
 	panic("implement me")
 }
