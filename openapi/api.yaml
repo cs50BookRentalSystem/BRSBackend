@@ -74,6 +74,7 @@ paths:
       operationId: "Logout"
       tags:
         - Authentication
+      security: []
       responses:
         '200':
           description: "Logout successful"
@@ -487,6 +488,12 @@ paths:
           $ref: '#/components/responses/InternalServerError'
 
 components:
+  securitySchemes: # <-- Add this section here
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: session_id
+
   schemas:
     LoginRequest:
       x-go-type: models.Librarian

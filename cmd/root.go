@@ -11,7 +11,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/go-chi/chi/v5"
+	middlewareoapi "github.com/oapi-codegen/nethttp-middleware"
 	"github.com/spf13/cobra"
 
 	"BRSBackend/pkg/api"
@@ -72,18 +74,20 @@ func runCommand(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	// Clear out the servers array in the swagger spec, that skips validating
-	// that server names match. We don't know how this thing will be run.
 	swagger.Servers = nil
 
+	authFun := middleware.NewOApiAuthenticationFunc(svc.Auth)
+
 	r := chi.NewRouter()
-	r.Post("/login", h.Login)
-	r.Post("/logout", h.Logout)
-	r.Group(func(r chi.Router) {
-		r.Use(middleware.AuthMiddleware(svc.Auth))
-		//r.Use(middleware.OapiRequestValidator(swagger))
-		api.HandlerFromMux(h, r)
-	})
+	r.Use(middlewareoapi.OapiRequestValidatorWithOptions(swagger, &middlewareoapi.Options{
+		Options: openapi3filter.Options{
+			ExcludeRequestBody:    false,
+			ExcludeResponseBody:   false,
+			IncludeResponseStatus: true,
+			AuthenticationFunc:    authFun,
+		},
+	}))
+	api.HandlerFromMux(h, r)
 
 	go func() {
 		ticker := time.NewTicker(1 * time.Hour)
