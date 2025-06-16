@@ -48,7 +48,8 @@ func (b *bookRepository) GetAll(ctx context.Context, params dto.PaginationParams
 		if id, err := uuid.Parse(params.Query); err == nil {
 			query = query.Where("id = ?", id)
 		} else {
-			query = query.Where("LOWER(title) LIKE ?", "%"+strings.ToLower(params.Query)+"%")
+			search := fmt.Sprintf("%%%s%%", strings.ToLower(strings.Trim(params.Query, `"`)))
+			query = query.Where("LOWER(title) LIKE ?", search)
 		}
 	}
 

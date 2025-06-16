@@ -3,6 +3,8 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -45,13 +47,26 @@ func (h *Handler) CreateRentTransaction(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *Handler) ListRents(w http.ResponseWriter, r *http.Request, params api.ListRentsParams) {
-
+	defaultBook := ""
+	defaultStudent := ""
+	defaultDate := time.Now()
 	filter := dto.RentFilters{
-		BookName:    params.BookName,
-		StudentName: params.StudentName,
-		Date:        &params.Date.Time,
-		Offset:      int(*params.Offset),
-		Limit:       int(*params.Limit),
+		BookName:    &defaultBook,
+		StudentName: &defaultStudent,
+		Date:        &defaultDate,
+		Limit:       10,
+		Offset:      0,
+	}
+
+	if params.BookName != nil && strings.TrimSpace(*params.BookName) != "" {
+		filter.BookName = params.BookName
+	}
+
+	if params.StudentName != nil && strings.TrimSpace(*params.StudentName) != "" {
+		filter.StudentName = params.StudentName
+	}
+	if params.Date != nil {
+		filter.Date = &params.Date.Time
 	}
 
 	rents, err := h.RentService.GetRents(r.Context(), filter)

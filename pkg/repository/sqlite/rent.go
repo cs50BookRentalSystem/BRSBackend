@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -70,15 +71,32 @@ func (r rentRepository) GetRentsByFilters(ctx context.Context, filters dto.RentF
 		Where("carts.status = ?", "RENTED")
 
 	if filters.BookName != nil && *filters.BookName != "" {
-		query = query.Where("books.title LIKE ?", "%"+*filters.BookName+"%")
+		searchBook := fmt.Sprintf("%%%s%%", strings.ToLower(strings.Trim(*filters.BookName, `"`)))
+		query = query.Where("books.title LIKE ?", searchBook)
 	}
 
 	if filters.StudentName != nil && *filters.StudentName != "" {
-		searchTerm := "%" + *filters.StudentName + "%"
-		query = query.Where(
-			"students.first_name LIKE ? OR students.last_name LIKE ? OR CONCAT(students.first_name, ' ', students.last_name) LIKE ?",
-			searchTerm, searchTerm, searchTerm,
-		)
+		fullName := strings.ToLower(strings.Trim(*filters.StudentName, `"`))
+		if fullName != "" {
+			parts := strings.Fields(fullName)
+
+			switch len(parts) {
+			case 1:
+				searchTerm := "%" + parts[0] + "%"
+				query = query.Where(
+					"LOWER(students.first_name) LIKE ? OR LOWER(students.last_name) LIKE ?",
+					searchTerm, searchTerm,
+				)
+			default:
+				firstName := parts[0]
+				lastName := parts[len(parts)-1]
+
+				query = query.Where(
+					"LOWER(students.first_name) LIKE ? OR LOWER(students.last_name) LIKE ? OR LOWER(CONCAT(students.first_name, ' ', students.last_name)) LIKE ?",
+					"%"+firstName+"%", "%"+lastName+"%", "%"+fullName+"%",
+				)
+			}
+		}
 	}
 
 	if filters.Date != nil {
