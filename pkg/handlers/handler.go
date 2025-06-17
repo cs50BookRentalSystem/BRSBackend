@@ -11,7 +11,8 @@ type Handler struct {
 	bookService    services.BookService
 	authService    services.AuthService
 	studentService services.StudentService
-	RentService    services.RentService
+	rentService    services.RentService
+	reportService  services.ReportService
 }
 
 func NewHandler(svc *services.Service) *Handler {
@@ -19,7 +20,8 @@ func NewHandler(svc *services.Service) *Handler {
 		bookService:    svc.Book,
 		authService:    svc.Auth,
 		studentService: svc.Student,
-		RentService:    svc.Rent,
+		rentService:    svc.Rent,
+		reportService:  svc.Report,
 	}
 }
 

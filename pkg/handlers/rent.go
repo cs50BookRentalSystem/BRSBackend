@@ -37,7 +37,7 @@ func (h *Handler) CreateRentTransaction(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 
-	response, err := h.RentService.CreateRentTransaction(r.Context(), req)
+	response, err := h.rentService.CreateRentTransaction(r.Context(), req)
 	if err != nil {
 		h.writeErrorResponse(w, http.StatusInternalServerError, "Failed to create rent transaction")
 		return
@@ -69,7 +69,15 @@ func (h *Handler) ListRents(w http.ResponseWriter, r *http.Request, params api.L
 		filter.Date = &params.Date.Time
 	}
 
-	rents, err := h.RentService.GetRents(r.Context(), filter)
+	if params.Limit != nil && int(*params.Limit) > 0 {
+		filter.Limit = int(*params.Limit)
+	}
+
+	if params.Offset != nil && int(*params.Offset) > 0 {
+		filter.Offset = int(*params.Offset)
+	}
+
+	rents, err := h.rentService.GetRents(r.Context(), filter)
 	if err != nil {
 		h.writeErrorResponse(w, http.StatusInternalServerError, "Failed to get rents")
 		return
@@ -80,7 +88,12 @@ func (h *Handler) ListRents(w http.ResponseWriter, r *http.Request, params api.L
 
 func (h *Handler) GetRentedBooksByStudent(w http.ResponseWriter, r *http.Request, params api.GetRentedBooksByStudentParams) {
 
-	response, err := h.RentService.GetRentedBooksByStudent(r.Context(), params.StudentCardId)
+	if params.StudentCardId == nil || strings.TrimSpace(*params.StudentCardId) == "" {
+		h.writeErrorResponse(w, http.StatusBadRequest, "Student card ID is required")
+		return
+	}
+
+	response, err := h.rentService.GetRentedBooksByStudent(r.Context(), params.StudentCardId)
 	if err != nil {
 		h.writeErrorResponse(w, http.StatusInternalServerError, "Failed to get rented books")
 		return
@@ -105,7 +118,7 @@ func (h *Handler) ReturnBooks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response, err := h.RentService.ReturnBooks(r.Context(), req.CartID)
+	response, err := h.rentService.ReturnBooks(r.Context(), req.CartID)
 	if err != nil {
 		h.writeErrorResponse(w, http.StatusInternalServerError, "Failed to return books")
 		return

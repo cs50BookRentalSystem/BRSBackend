@@ -111,11 +111,3 @@ func (h *Handler) ListOrSearchBooks(w http.ResponseWriter, r *http.Request, para
 	h.writeResponse(w, http.StatusOK, api.ListOrSearchBooks200JSONResponse{Results: &books, Pagination: apiPagination})
 
 }
-
-func (h *Handler) ListOverdueRentals(w http.ResponseWriter, r *http.Request, params api.ListOverdueRentalsParams) {
-	panic("implement me")
-}
-
-func (h *Handler) GetRentalReports(w http.ResponseWriter, r *http.Request, params api.GetRentalReportsParams) {
-	panic("implement me")
-}

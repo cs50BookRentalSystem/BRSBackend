@@ -157,38 +157,7 @@ func (r rentRepository) GetRentsByCartID(ctx context.Context, cartID uuid.UUID) 
 	return rents, nil
 }
 
-func (r rentRepository) GetRentedBooks(ctx context.Context, studentCardID string) ([]*repository.RentSummary, error) {
-	//var rentSummaries []*repository.RentSummary
-	//query := `
-	//	SELECT
-	//		rents.id as rent_id,
-	//		rents.cart_id,
-	//		books.title as book_title,
-	//		(students.first_name || ' ' || students.last_name) as student_name,
-	//		carts.created_at as rented_date
-	//	FROM rents
-	//	JOIN carts ON rents.cart_id = carts.id
-	//	JOIN books ON rents.book_id = books.id
-	//	JOIN students ON carts.student_id = students.id
-	//	WHERE carts.status = 'RENTED'
-	//`
-	//args := []interface{}{}
-	//if studentCardID != "" {
-	//	query += " AND students.card_id = ?"
-	//	args = append(args, studentCardID)
-	//}
-	//
-	//query += " ORDER BY carts.created_at DESC"
-	//
-	//if err := r.db.WithContext(ctx).Raw(query, args...).Scan(&rentSummaries).Error; err != nil {
-	//	return nil, fmt.Errorf("failed to get rented books: %w", err)
-	//}
-	//
-	//return rentSummaries, nil
-	panic("implement me")
-}
-
-func (r rentRepository) GetOverdueRentals(ctx context.Context, studentCardID string, offset, limit int) ([]*repository.OverdueUser, int64, error) {
+func (r rentRepository) GetOverdueRentals(ctx context.Context, studentCardID string, offset, limit int) ([]*dto.OverdueUser, int64, error) {
 	//var overdueUsers []*repository.OverdueUser
 	//var total int64
 	//
@@ -235,7 +204,7 @@ func (r rentRepository) GetOverdueRentals(ctx context.Context, studentCardID str
 	panic("implement me")
 }
 
-func (r rentRepository) GetRentalReport(ctx context.Context) (*repository.RentReport, error) {
+func (r rentRepository) GetRentalReport(ctx context.Context) (*dto.RentReport, error) {
 	//var report repository.RentReport
 	//
 	//if err := r.db.WithContext(ctx).Model(&models.Rent{}).Count(&report.TotalRents).Error; err != nil {
@@ -264,60 +233,5 @@ func (r rentRepository) GetRentalReport(ctx context.Context) (*repository.RentRe
 	//
 	//report.TopBooks = topBooks
 	//return &report, nil
-	panic("implement me")
-}
-
-func (r rentRepository) SearchRents(ctx context.Context, bookName, studentName string, date *time.Time, offset, limit int) ([]*repository.RentSummary, int64, error) {
-	//var rentSummaries []*repository.RentSummary
-	//var total int64
-	//
-	//baseQuery := `
-	//	FROM rents
-	//	JOIN carts ON rents.cart_id = carts.id
-	//	JOIN books ON rents.book_id = books.id
-	//	JOIN students ON carts.student_id = students.id
-	//	WHERE 1=1
-	//`
-	//
-	//args := []interface{}{}
-	//
-	//if bookName != "" {
-	//	baseQuery += " AND books.title LIKE ?"
-	//	args = append(args, "%"+bookName+"%")
-	//}
-	//
-	//if studentName != "" {
-	//	baseQuery += " AND (students.first_name LIKE ? OR students.last_name LIKE ?)"
-	//	args = append(args, "%"+studentName+"%", "%"+studentName+"%")
-	//}
-	//
-	//if date != nil {
-	//	baseQuery += " AND DATE(carts.created_at) = DATE(?)"
-	//	args = append(args, date.Format("2006-01-02"))
-	//}
-	//
-	//countQuery := "SELECT COUNT(*) " + baseQuery
-	//if err := r.db.WithContext(ctx).Raw(countQuery, args...).Scan(&total).Error; err != nil {
-	//	return nil, 0, fmt.Errorf("failed to count search results: %w", err)
-	//}
-	//
-	//query := `
-	//	SELECT
-	//		rents.id as rent_id,
-	//		rents.cart_id,
-	//		books.title as book_title,
-	//		(students.first_name || ' ' || students.last_name) as student_name,
-	//		carts.created_at as rented_date
-	//	` + baseQuery + `
-	//	ORDER BY carts.created_at DESC
-	//	LIMIT ? OFFSET ?
-	//`
-	//
-	//args = append(args, limit, offset)
-	//if err := r.db.WithContext(ctx).Raw(query, args...).Scan(&rentSummaries).Error; err != nil {
-	//	return nil, 0, fmt.Errorf("failed to search rents: %w", err)
-	//}
-	//
-	//return rentSummaries, total, nil
 	panic("implement me")
 }

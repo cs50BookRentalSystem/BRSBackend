@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/google/uuid"
 	oapiTypes "github.com/oapi-codegen/runtime/types"
 
 	"BRSBackend/pkg/api"
@@ -75,6 +76,10 @@ func (h *Handler) AddStudent(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) GetStudentById(w http.ResponseWriter, r *http.Request, id oapiTypes.UUID) {
 
+	if id == uuid.Nil || id.String() == "" {
+		h.writeErrorResponse(w, http.StatusBadRequest, "Student ID is required")
+		return
+	}
 	student, err := h.studentService.GetStudentByID(r.Context(), id.String())
 	if err != nil {
 		return

@@ -488,7 +488,7 @@ paths:
           $ref: '#/components/responses/InternalServerError'
 
 components:
-  securitySchemes: # <-- Add this section here
+  securitySchemes:
     cookieAuth:
       type: apiKey
       in: cookie

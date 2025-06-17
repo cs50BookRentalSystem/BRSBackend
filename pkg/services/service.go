@@ -9,6 +9,7 @@ type Service struct {
 	Auth    AuthService
 	Student StudentService
 	Rent    RentService
+	Report  ReportService
 }
 
 func NewService(repo *repository.Repository) *Service {
@@ -17,5 +18,6 @@ func NewService(repo *repository.Repository) *Service {
 		Auth:    NewAuthService(repo.Librarian, repo.Session),
 		Student: NewStudentService(repo.Student),
 		Rent:    NewRentService(repo.Rent, repo.Cart, repo.Book, repo.Student),
+		Report:  NewReportService(repo.Report),
 	}
 }
