@@ -1,6 +1,3 @@
-/*
-Copyright © 2025 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -16,6 +13,7 @@ import (
 	middlewareoapi "github.com/oapi-codegen/nethttp-middleware"
 	"github.com/spf13/cobra"
 
+	"BRSBackend/pkg"
 	"BRSBackend/pkg/api"
 	"BRSBackend/pkg/config"
 	"BRSBackend/pkg/handlers"
@@ -79,15 +77,34 @@ func runCommand(cmd *cobra.Command, args []string) {
 	authFun := middleware.NewOApiAuthenticationFunc(svc.Auth)
 
 	r := chi.NewRouter()
-	r.Use(middlewareoapi.OapiRequestValidatorWithOptions(swagger, &middlewareoapi.Options{
-		Options: openapi3filter.Options{
-			ExcludeRequestBody:    false,
-			ExcludeResponseBody:   false,
-			IncludeResponseStatus: true,
-			AuthenticationFunc:    authFun,
-		},
-	}))
-	api.HandlerFromMux(h, r)
+	//r.Use(middlewareoapi.OapiRequestValidatorWithOptions(swagger, &middlewareoapi.Options{
+	//	Options: openapi3filter.Options{
+	//		ExcludeRequestBody:    false,
+	//		ExcludeResponseBody:   false,
+	//		IncludeResponseStatus: true,
+	//		AuthenticationFunc:    authFun,
+	//	},
+	//}))
+
+	r.Get("/swagger/*", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("/swagger")
+		http.StripPrefix("/swagger/", http.FileServer(http.FS(pkg.SwaggerUI))).ServeHTTP(w, r)
+	})
+
+	r.Group(func(r chi.Router) {
+		r.Use(middlewareoapi.OapiRequestValidatorWithOptions(swagger, &middlewareoapi.Options{
+			Options: openapi3filter.Options{
+				ExcludeRequestBody:    false,
+				ExcludeResponseBody:   false,
+				IncludeResponseStatus: true,
+				AuthenticationFunc:    authFun,
+			},
+		}))
+
+		api.HandlerFromMux(h, r)
+	})
+
+	//api.HandlerFromMux(h, r)
 
 	go func() {
 		ticker := time.NewTicker(1 * time.Hour)
