@@ -14,8 +14,11 @@ type BookRepository interface {
 	GetByID(ctx context.Context, id uuid.UUID) (*models.Book, error)
 	GetAll(ctx context.Context, params dto.PaginationParams) ([]*models.Book, int64, error)
 	GetBooksByIDs(ctx context.Context, bookIDs []uuid.UUID) ([]*models.Book, error)
-	Update(ctx context.Context, book *models.Book) error
-	Delete(ctx context.Context, id uuid.UUID) error
+	UpdateCount(ctx context.Context, bookID uuid.UUID, delta int) error
+	DecrementCount(ctx context.Context, bookID uuid.UUID) error
+	IncrementCount(ctx context.Context, bookID uuid.UUID) error
+	DecrementMultipleBooks(ctx context.Context, bookIDs []uuid.UUID) error
+	IncrementMultipleBooks(ctx context.Context, bookIDs []uuid.UUID) error
 }
 
 type StudentRepository interface {

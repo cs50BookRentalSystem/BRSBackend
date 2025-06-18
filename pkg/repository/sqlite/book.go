@@ -73,12 +73,107 @@ func (b *bookRepository) GetBooksByIDs(ctx context.Context, bookIDs []uuid.UUID)
 	return books, b.db.WithContext(ctx).Where("id IN ?", bookIDs).Find(&books).Error
 }
 
-func (b *bookRepository) Update(ctx context.Context, book *models.Book) error {
-	panic("implement me")
+func (b *bookRepository) UpdateCount(ctx context.Context, bookID uuid.UUID, delta int) error {
+
+	tx := b.db.WithContext(ctx).Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	var book models.Book
+	if err := tx.Set("gorm:query_option", "FOR UPDATE").Where("id = ?", bookID).First(&book).Error; err != nil {
+		tx.Rollback()
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return fmt.Errorf("book not found")
+		}
+		return fmt.Errorf("failed to get book: %w", err)
+	}
+
+	newCount := book.Count + delta
+	if newCount < 0 {
+		tx.Rollback()
+		return fmt.Errorf("insufficient book count: current=%d, requested=%d", book.Count, -delta)
+	}
+
+	if err := tx.Model(&book).Update("count", newCount).Error; err != nil {
+		tx.Rollback()
+		return fmt.Errorf("failed to update book count: %w", err)
+	}
+
+	return tx.Commit().Error
 }
 
-func (b *bookRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	panic("implement me")
+func (b *bookRepository) DecrementCount(ctx context.Context, bookID uuid.UUID) error {
+	return b.UpdateCount(ctx, bookID, -1)
+}
+
+func (b *bookRepository) IncrementCount(ctx context.Context, bookID uuid.UUID) error {
+	return b.UpdateCount(ctx, bookID, 1)
+}
+
+func (b *bookRepository) DecrementMultipleBooks(ctx context.Context, bookIDs []uuid.UUID) error {
+	tx := b.db.WithContext(ctx).Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	bookCounts := make(map[uuid.UUID]int)
+	for _, bookID := range bookIDs {
+		bookCounts[bookID]++
+	}
+
+	for bookID, count := range bookCounts {
+		var book models.Book
+		if err := tx.Set("gorm:query_option", "FOR UPDATE").Where("id = ?", bookID).First(&book).Error; err != nil {
+			tx.Rollback()
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return fmt.Errorf("book not found: %s", bookID)
+			}
+			return fmt.Errorf("failed to get book %s: %w", bookID, err)
+		}
+
+		newCount := book.Count - count
+		if newCount < 0 {
+			tx.Rollback()
+			return fmt.Errorf("insufficient book count for '%s': current=%d, requested=%d", book.Title, book.Count, count)
+		}
+
+		if err := tx.Model(&book).Update("count", newCount).Error; err != nil {
+			tx.Rollback()
+			return fmt.Errorf("failed to update book count for %s: %w", bookID, err)
+		}
+	}
+
+	return tx.Commit().Error
+}
+
+func (b *bookRepository) IncrementMultipleBooks(ctx context.Context, bookIDs []uuid.UUID) error {
+
+	tx := b.db.WithContext(ctx).Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	bookCounts := make(map[uuid.UUID]int)
+	for _, bookID := range bookIDs {
+		bookCounts[bookID]++
+	}
+
+	for bookID, count := range bookCounts {
+		if err := tx.Model(&models.Book{}).Where("id = ?", bookID).
+			Update("count", gorm.Expr("count + ?", count)).Error; err != nil {
+			tx.Rollback()
+			return fmt.Errorf("failed to increment book count for %s: %w", bookID, err)
+		}
+	}
+
+	return tx.Commit().Error
 }
 
 func NewBookRepository(db *gorm.DB) repository.BookRepository {

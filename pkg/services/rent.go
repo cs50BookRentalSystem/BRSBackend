@@ -56,6 +56,19 @@ func (r *rentService) CreateRentTransaction(ctx context.Context, req dto.CreateR
 		return nil, fmt.Errorf("one or more books not found")
 	}
 
+	bookCounts := make(map[uuid.UUID]int)
+	for _, bookID := range req.BookIDs {
+		bookCounts[bookID]++
+	}
+
+	for _, book := range books {
+		requestedCount := bookCounts[book.Id]
+		if book.Count < requestedCount {
+			return nil, fmt.Errorf("insufficient copies of book '%s': available=%d, requested=%d",
+				book.Title, book.Count, requestedCount)
+		}
+	}
+
 	cart := &models.Cart{
 		StudentId: req.StudentID,
 		Status:    "RENTED",
@@ -74,6 +87,10 @@ func (r *rentService) CreateRentTransaction(ctx context.Context, req dto.CreateR
 		if err := r.rentRepo.Create(ctx, rent); err != nil {
 			return nil, fmt.Errorf("failed to create rent record for book %s: %w", bookID, err)
 		}
+	}
+
+	if err := r.bookRepo.DecrementMultipleBooks(ctx, req.BookIDs); err != nil {
+		return nil, fmt.Errorf("failed to update book counts: %w", err)
 	}
 
 	return &dto.CreateRentResponse{
@@ -156,6 +173,24 @@ func (r *rentService) ReturnBooks(ctx context.Context, cartID uuid.UUID) (*dto.R
 		return nil, fmt.Errorf("cart %s is not currently rented (status: %s)", cartID, cart.Status)
 	}
 
+	rents, err := r.rentRepo.GetRentsByCartID(ctx, cart.Id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get rent records: %w", err)
+	}
+
+	if len(rents) == 0 {
+		return nil, fmt.Errorf("no rent records found for cart")
+	}
+
+	var bookIDs []uuid.UUID
+	for _, rent := range rents {
+		bookIDs = append(bookIDs, rent.BookId)
+	}
+
+	if err := r.bookRepo.IncrementMultipleBooks(ctx, bookIDs); err != nil {
+		return nil, fmt.Errorf("failed to update book counts: %w", err)
+	}
+
 	if err := r.cartRepo.UpdateStatus(ctx, cartID, "RETURNED"); err != nil {
 		return nil, fmt.Errorf("failed to update cart status: %w", err)
 	}
@@ -165,3 +200,7 @@ func (r *rentService) ReturnBooks(ctx context.Context, cartID uuid.UUID) (*dto.R
 		CartID:  cartID,
 	}, nil
 }
+
+//SELECT count(*) FROM `rents` JOIN carts ON rents.cart_id = carts.id JOIN students ON carts.student_id = students.id WHERE (carts.status = "RENTED" AND carts.created_at < "2025-06-17 11:15:29.603") AND students.card_id = "1234567890" GROUP BY students.id, students.first_name, students.last_name, students.phone HAVING days_overdue > 1;
+//
+//SELECT count(*) as rental_count, students.id, students.first_name, students.last_name, students.phone, julianday('now') - julianday(carts.created_at) as days_overdue FROM rents JOIN carts ON rents.cart_id = carts.id JOIN students ON carts.student_id = students.id WHERE carts.status = "RENTED" AND carts.created_at < "2025-06-17 11:15:29.603" AND students.card_id = "1234567890" GROUP BY students.id, students.first_name, students.last_name, students.phone HAVING julianday('now') - julianday(carts.created_at) > 1;

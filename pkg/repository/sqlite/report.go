@@ -24,7 +24,7 @@ func (r reportRepository) GetOverdueRentals(ctx context.Context, studentCardID *
 	var overdueUsers []dto.OverdueUser
 	var total int64
 
-	overduePeriod := 7 * 24 * time.Hour
+	overduePeriod := 1 * 24 * time.Hour
 	overdueDate := time.Now().Add(-overduePeriod)
 
 	query := r.db.WithContext(ctx).
@@ -40,9 +40,9 @@ func (r reportRepository) GetOverdueRentals(ctx context.Context, studentCardID *
 		Joins("JOIN students ON carts.student_id = students.id").
 		Where("carts.status = ? AND carts.created_at < ?", "RENTED", overdueDate).
 		Group("students.id, students.first_name, students.last_name, students.phone").
-		Having("days_overdue > ?", 7)
+		Having("days_overdue > ?", 1)
 
-	if studentCardID != nil && *studentCardID != "" {
+	if *studentCardID != "" {
 		query = query.Where("students.card_id = ?", *studentCardID)
 	}
 

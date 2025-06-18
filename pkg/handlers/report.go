@@ -2,23 +2,22 @@ package handlers
 
 import (
 	"net/http"
-	"strings"
 
 	"BRSBackend/pkg/api"
 )
 
 func (h *Handler) ListOverdueRentals(w http.ResponseWriter, r *http.Request, params api.ListOverdueRentalsParams) {
 
-	if params.StudentCardId == nil || strings.TrimSpace(*params.StudentCardId) == "" {
+	if params.StudentCardId == nil {
 		h.writeErrorResponse(w, http.StatusBadRequest, "Student card ID is required")
 		return
 	}
 
-	if params.Limit == nil || int(*params.Limit) > 0 {
+	if params.Limit == nil || int(*params.Limit) < 0 {
 		h.writeErrorResponse(w, http.StatusBadRequest, "Invalid limit parameter")
 	}
 
-	if params.Offset == nil || int(*params.Offset) > 0 {
+	if params.Offset == nil || int(*params.Offset) < 0 {
 		h.writeErrorResponse(w, http.StatusBadRequest, "Invalid offset parameter")
 	}
 
