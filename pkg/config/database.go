@@ -53,13 +53,6 @@ func NewDatabase(dbPath string) (*Database, error) {
 		},
 	)
 
-	//db, err := gorm.Open(sqlite.Dialector{
-	//	DriverName: CustomDriverName,
-	//	DSN:        dbPath,
-	//	Conn: conn,, &gorm.Config{
-	//	Logger: newLogger,
-	//})
-
 	db, err := gorm.Open(sqlite.Dialector{
 		DriverName: CustomDriverName,
 		DSN:        dbPath,

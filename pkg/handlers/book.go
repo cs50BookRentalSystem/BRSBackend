@@ -10,38 +10,6 @@ import (
 	"BRSBackend/pkg/models"
 )
 
-//type BookHandler struct {
-//	bookService services.BookService
-//}
-//
-//func NewBookHandler(bookService services.BookService) *BookHandler {
-//	return &BookHandler{
-//		bookService: bookService,
-//	}
-//}
-
-//type APIResponse struct {
-//	Success bool        `json:"success"`
-//	Data    interface{} `json:"data,omitempty"`
-//	Error   string      `json:"error,omitempty"`
-//	Message string      `json:"message,omitempty"`
-//}
-
-//func (h *BookHandler) writeErrorResponse(w http.ResponseWriter, statusCode int, message string) {
-//	h.writeResponse(w, statusCode, APIResponse{
-//		Success: false,
-//		Error:   message,
-//	})
-//}
-//
-//func (h *BookHandler) writeSuccessResponse(w http.ResponseWriter, data interface{}, message string) {
-//	h.writeResponse(w, http.StatusOK, APIResponse{
-//		Success: true,
-//		Data:    data,
-//		Message: message,
-//	})
-//}
-
 func (h *Handler) AddBook(w http.ResponseWriter, r *http.Request) {
 
 	var book models.Book
