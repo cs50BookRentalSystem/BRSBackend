@@ -18,6 +18,23 @@ security:
   - cookieAuth: []
 
 paths:
+  /openapi.json:
+    x-hidden: true
+    get:
+      summary: Get this OpenAPI spec
+      operationId: GetOpenAPISpec
+      security: []
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: string
+                format: json
+        default:
+          $ref: '#/components/responses/InvalidRequestParameters'
+
   /login:
     post:
       summary: "librarian login"

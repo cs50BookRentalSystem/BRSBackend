@@ -2,8 +2,13 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"net/url"
 
+	"github.com/getkin/kin-openapi/openapi3"
+
+	"BRSBackend/pkg/api"
 	"BRSBackend/pkg/services"
 )
 
@@ -40,4 +45,35 @@ func (h *Handler) writeResponse(w http.ResponseWriter, statusCode int, response 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 	json.NewEncoder(w).Encode(response)
+}
+
+func (h *Handler) GetOpenAPISpec(w http.ResponseWriter, r *http.Request) {
+	swagger, err := api.GetSwagger()
+	if err != nil {
+		h.writeErrorResponse(w, http.StatusBadRequest, fmt.Sprintf("failed to get swagger: %v", err))
+		return
+	}
+	headers := r.Header
+
+	serverurl := &url.URL{}
+	if forwardedHost, ok := headers["X-Forwarded-Host"]; ok {
+		proto := "http"
+		if forwardedProto, ok := headers["X-Forwarded-Proto"]; ok {
+			proto = forwardedProto[0]
+		}
+		serverurl.Scheme = proto
+		serverurl.Host = forwardedHost[0]
+	}
+
+	if forwardedPrefix, ok := headers["X-Forwarded-Prefix"]; ok {
+		serverurl = serverurl.JoinPath(forwardedPrefix[0])
+	}
+
+	if *serverurl != (url.URL{}) {
+		swagger.AddServer(&openapi3.Server{
+			URL: serverurl.String(),
+		})
+	}
+
+	h.writeResponse(w, http.StatusOK, swagger)
 }

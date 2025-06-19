@@ -13,7 +13,6 @@ import (
 	middlewareoapi "github.com/oapi-codegen/nethttp-middleware"
 	"github.com/spf13/cobra"
 
-	"BRSBackend/pkg"
 	"BRSBackend/pkg/api"
 	"BRSBackend/pkg/config"
 	"BRSBackend/pkg/handlers"
@@ -87,8 +86,7 @@ func runCommand(cmd *cobra.Command, args []string) {
 	//}))
 
 	r.Get("/swagger/*", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("/swagger")
-		http.StripPrefix("/swagger/", http.FileServer(http.FS(pkg.SwaggerUI))).ServeHTTP(w, r)
+		http.StripPrefix("/swagger/", http.FileServer(http.FS(api.SwaggerUI))).ServeHTTP(w, r)
 	})
 
 	r.Group(func(r chi.Router) {
