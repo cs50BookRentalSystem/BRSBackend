@@ -23,8 +23,8 @@ type RentFilters struct {
 }
 
 type CreateRentRequest struct {
-	StudentID uuid.UUID   `json:"student_id"`
-	BookIDs   []uuid.UUID `json:"book_ids"`
+	StudentID uuid.UUID   `json:"student_id" validate:"required"`
+	BookIDs   []uuid.UUID `json:"book_ids" validate:"required,min=1"`
 }
 
 type CreateRentResponse struct {

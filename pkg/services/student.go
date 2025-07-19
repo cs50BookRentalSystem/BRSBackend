@@ -29,11 +29,6 @@ func NewStudentService(repo repository.StudentRepository) StudentService {
 }
 
 func (s studentService) CreateStudent(ctx context.Context, student *models.Student) error {
-
-	if student.FirstName == "" || student.LastName == "" || student.Major == "" || student.Phone == "" {
-		return fmt.Errorf("required student information missing")
-	}
-
 	return s.repo.Create(ctx, student)
 }
 

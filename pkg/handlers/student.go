@@ -10,6 +10,7 @@ import (
 	"BRSBackend/pkg/api"
 	"BRSBackend/pkg/dto"
 	"BRSBackend/pkg/models"
+	"BRSBackend/pkg/validation"
 )
 
 func (h *Handler) ListAllStudents(w http.ResponseWriter, r *http.Request, params api.ListAllStudentsParams) {
@@ -63,6 +64,11 @@ func (h *Handler) AddStudent(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewDecoder(r.Body).Decode(&student); err != nil {
 		h.writeErrorResponse(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	if validationErrors := validation.ValidateStruct(student); validationErrors != nil {
+		h.writeErrorResponse(w, http.StatusBadRequest, validation.FormatErrors(validationErrors))
 		return
 	}
 

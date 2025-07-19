@@ -623,12 +623,12 @@ components:
         id:
           type: string
           format: uuid
-        student_card_id:
+        card_id:
           type: string
-        firstName:
+        first_name:
           type: string
           nullable: false
-        lastName:
+        last_name:
           type: string
           nullable: false
         major:

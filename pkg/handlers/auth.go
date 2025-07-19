@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"BRSBackend/pkg/dto"
+	"BRSBackend/pkg/validation"
 )
 
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
@@ -15,8 +16,8 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if loginReq.User == "" || loginReq.Pass == "" {
-		h.writeErrorResponse(w, http.StatusBadRequest, "Username and password are required")
+	if validationErrors := validation.ValidateStruct(loginReq); validationErrors != nil {
+		h.writeErrorResponse(w, http.StatusBadRequest, validation.FormatErrors(validationErrors))
 		return
 	}
 

@@ -10,6 +10,7 @@ import (
 
 	"BRSBackend/pkg/api"
 	"BRSBackend/pkg/dto"
+	"BRSBackend/pkg/validation"
 )
 
 func (h *Handler) CreateRentTransaction(w http.ResponseWriter, r *http.Request) {
@@ -20,21 +21,9 @@ func (h *Handler) CreateRentTransaction(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	if req.StudentID == uuid.Nil {
-		h.writeErrorResponse(w, http.StatusBadRequest, "student_id is required")
+	if validationErrors := validation.ValidateStruct(req); validationErrors != nil {
+		h.writeErrorResponse(w, http.StatusBadRequest, validation.FormatErrors(validationErrors))
 		return
-	}
-
-	if len(req.BookIDs) == 0 {
-		h.writeErrorResponse(w, http.StatusBadRequest, "book_ids is required and cannot be empty")
-		return
-	}
-
-	for _, bookID := range req.BookIDs {
-		if bookID == uuid.Nil {
-			h.writeErrorResponse(w, http.StatusBadRequest, "all book_ids must be valid UUIDs")
-			return
-		}
 	}
 
 	response, err := h.rentService.CreateRentTransaction(r.Context(), req)
@@ -105,7 +94,7 @@ func (h *Handler) GetRentedBooksByStudent(w http.ResponseWriter, r *http.Request
 func (h *Handler) ReturnBooks(w http.ResponseWriter, r *http.Request) {
 
 	var req struct {
-		CartID uuid.UUID `json:"cart_id"`
+		CartID uuid.UUID `json:"cart_id" validate:"required"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -113,8 +102,8 @@ func (h *Handler) ReturnBooks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.CartID == uuid.Nil {
-		h.writeErrorResponse(w, http.StatusBadRequest, "cart_id is required")
+	if validationErrors := validation.ValidateStruct(req); validationErrors != nil {
+		h.writeErrorResponse(w, http.StatusBadRequest, validation.FormatErrors(validationErrors))
 		return
 	}
 

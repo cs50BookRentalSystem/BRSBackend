@@ -7,8 +7,8 @@ import (
 
 type Book struct {
 	gorm.Model  `json:"-"`
-	Id          uuid.UUID `gorm:"primaryKey;type:uuid;default:(gen_random_uuid())" json:"id"`
-	Title       string    `gorm:"type:varchar(255);not null" json:"title"`
-	Description string    `gorm:"type:text;not null" json:"description"`
-	Count       int       `gorm:"type:int;not null" json:"count"`
+	Id          uuid.UUID `json:"id" gorm:"primaryKey;type:uuid;default:(gen_random_uuid())"`
+	Title       string    `json:"title" validate:"required" gorm:"type:varchar(255);not null"`
+	Description string    `json:"description" gorm:"type:text;not null"`
+	Count       int       `json:"count" validate:"min=0" gorm:"type:int;not null"`
 }

@@ -28,14 +28,6 @@ func NewBookService(repo repository.BookRepository) BookService {
 }
 
 func (b *bookService) CreateBook(ctx context.Context, book *models.Book) error {
-
-	if book.Title == "" {
-		return fmt.Errorf("book title is required")
-	}
-	if book.Count < 0 {
-		return fmt.Errorf("book cannot be negative")
-	}
-
 	return b.repo.Create(ctx, book)
 }
 
