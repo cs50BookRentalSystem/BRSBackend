@@ -1,9 +1,12 @@
 package config
 
 import (
+	"context"
+
+	"github.com/labstack/gommon/log"
+
 	"BRSBackend/pkg/models"
 	"BRSBackend/pkg/services"
-	"context"
 )
 
 func SeedData(bookService services.BookService, studentService services.StudentService) {
@@ -110,7 +113,9 @@ func seedBooks(bookService services.BookService) {
 	}
 
 	for _, book := range books {
-		bookService.CreateBook(context.Background(), &book)
+		if err := bookService.CreateBook(context.Background(), &book); err != nil {
+			log.Errorf("Failed to create book: %v", err)
+		}
 	}
 }
 
@@ -139,6 +144,8 @@ func seedStudents(studentService services.StudentService) {
 	}
 
 	for _, student := range students {
-		studentService.CreateStudent(context.Background(), &student)
+		if err := studentService.CreateStudent(context.Background(), &student); err != nil {
+			log.Errorf("Failed to create student: %v", err)
+		}
 	}
 }
