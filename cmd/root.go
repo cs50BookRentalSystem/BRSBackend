@@ -50,7 +50,7 @@ func init() {
 }
 
 func runCommand(cmd *cobra.Command, args []string) {
-	db, err := config.NewDatabase("/data/identifier.sqlite")
+	db, err := config.NewDatabase("./identifier.sqlite")
 	if err != nil {
 		panic("Failed to connect database")
 	}
