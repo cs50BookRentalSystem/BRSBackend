@@ -50,7 +50,7 @@ func init() {
 }
 
 func runCommand(cmd *cobra.Command, args []string) {
-	db, err := config.NewDatabase("./identifier.sqlite")
+	db, err := config.NewDatabase("/data/identifier.sqlite")
 	if err != nil {
 		panic("Failed to connect database")
 	}
@@ -62,6 +62,8 @@ func runCommand(cmd *cobra.Command, args []string) {
 	svc := services.NewService(repo)
 
 	config.SeedDefaultLibrarian(svc.Auth)
+
+	config.SeedData(svc.Book, svc.Student)
 
 	h := handlers.NewHandler(svc)
 
