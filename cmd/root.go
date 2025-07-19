@@ -78,6 +78,7 @@ func runCommand(cmd *cobra.Command, args []string) {
 	authFun := middleware.NewOApiAuthenticationFunc(svc.Auth)
 
 	r := chi.NewRouter()
+	r.Use(middleware.Cors())
 	//r.Use(middlewareoapi.OapiRequestValidatorWithOptions(swagger, &middlewareoapi.Options{
 	//	Options: openapi3filter.Options{
 	//		ExcludeRequestBody:    false,
