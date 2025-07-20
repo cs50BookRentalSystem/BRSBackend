@@ -21,11 +21,30 @@ type AuthService interface {
 	Logout(ctx context.Context, sessionId string) error
 	CreateLibrarian(ctx context.Context, username, password string) error
 	CleanupExpiredSessions() error
+	GetLibrarian(ctx context.Context, sessionId string) (*dto.LoginResponse, error)
 }
 
 type authService struct {
 	librarianRepo repository.LibrarianRepository
 	sessionRepo   repository.SessionRepository
+}
+
+func (a *authService) GetLibrarian(ctx context.Context, sessionId string) (*dto.LoginResponse, error) {
+	if sessionId == "" {
+		return nil, errors.New("no session provided")
+	}
+
+	session, err := a.sessionRepo.GetByID(ctx, sessionId)
+	if err != nil {
+		return nil, fmt.Errorf("invalid session provided: %w", err)
+	}
+
+	response := &dto.LoginResponse{
+		Message:     "valid session",
+		LibrarianId: session.LibrarianId,
+	}
+
+	return response, nil
 }
 
 func (a *authService) Login(ctx context.Context, req dto.LoginRequest) (*dto.LoginResponse, string, error) {

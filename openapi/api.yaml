@@ -106,6 +106,41 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
+  /librarian:
+    get:
+      summary: "librarian profile"
+      description: "Just for checking whether librarian is already login or not"
+      operationId: "Librarian"
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: "valid session and response librarian profile"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  librarian_id:
+                    type: string
+                    format: uuid
+              example:
+                message: "valid session"
+                librarian_id: "12345678-e29b-41d4-a716-446655440000"
+        '401':
+          description: "invalid session or expired session"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: 401
+                message: "Invalid or expired session. Please log in again."
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
   /books:
     get:
       summary: "List or search books (order by newly created books)"

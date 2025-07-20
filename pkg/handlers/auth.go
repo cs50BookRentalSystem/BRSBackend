@@ -60,3 +60,19 @@ func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, clearCookie)
 	h.writeResponse(w, http.StatusOK, map[string]string{"message": "Logout successful"})
 }
+
+func (h *Handler) Librarian(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		h.writeErrorResponse(w, http.StatusUnauthorized, "invalid session or expired session")
+		return
+	}
+
+	response, err := h.authService.GetLibrarian(r.Context(), cookie.Value)
+	if err != nil {
+		h.writeErrorResponse(w, http.StatusUnauthorized, "invalid session or expired session")
+		return
+	}
+
+	h.writeResponse(w, http.StatusOK, response)
+}
