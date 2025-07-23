@@ -88,6 +88,7 @@ func (h *Handler) GetStudentById(w http.ResponseWriter, r *http.Request, id oapi
 	}
 	student, err := h.studentService.GetStudentByID(r.Context(), id.String())
 	if err != nil {
+		h.writeErrorResponse(w, http.StatusNotFound, err.Error())
 		return
 	}
 
