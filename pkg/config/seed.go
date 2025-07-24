@@ -2,16 +2,54 @@ package config
 
 import (
 	"context"
+	"math/rand"
 
+	"github.com/google/uuid"
 	"github.com/labstack/gommon/log"
 
+	"BRSBackend/pkg/dto"
 	"BRSBackend/pkg/models"
 	"BRSBackend/pkg/services"
 )
 
-func SeedData(bookService services.BookService, studentService services.StudentService) {
+func SeedData(bookService services.BookService, studentService services.StudentService, rentService services.RentService) {
 	seedBooks(bookService)
 	seedStudents(studentService)
+	seedRents(rentService, bookService, studentService)
+}
+
+func seedRents(rentService services.RentService, bookService services.BookService, studentService services.StudentService) {
+	books, err := bookService.GetAllBooks(context.Background(), dto.PaginationParams{Limit: 100, Offset: 0})
+	if err != nil {
+		log.Errorf("Failed to get books for seeding rents: %v", err)
+		return
+	}
+
+	students, err := studentService.GetAllStudents(context.Background(), dto.PaginationParams{Limit: 100, Offset: 0})
+	if err != nil {
+		log.Errorf("Failed to get students for seeding rents: %v", err)
+		return
+	}
+
+	if len(books.Results) == 0 || len(students.Results) == 0 {
+		log.Info("No books or students to seed rents with.")
+		return
+	}
+
+	for i := 0; i < 35; i++ {
+		student := students.Results[rand.Intn(len(students.Results))]
+		book := books.Results[rand.Intn(len(books.Results))]
+
+		rentRequest := dto.CreateRentRequest{
+			StudentID: student.Id,
+			BookIDs:   []uuid.UUID{book.Id},
+		}
+
+		_, err := rentService.CreateRentTransaction(context.Background(), rentRequest)
+		if err != nil {
+			log.Errorf("Failed to create rent transaction: %v", err)
+		}
+	}
 }
 
 func seedBooks(bookService services.BookService) {

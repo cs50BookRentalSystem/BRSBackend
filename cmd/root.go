@@ -63,7 +63,7 @@ func runCommand(cmd *cobra.Command, args []string) {
 
 	config.SeedDefaultLibrarian(svc.Auth)
 
-	config.SeedData(svc.Book, svc.Student)
+	config.SeedData(svc.Book, svc.Student, svc.Rent)
 
 	h := handlers.NewHandler(svc)
 

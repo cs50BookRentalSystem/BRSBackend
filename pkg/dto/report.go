@@ -19,6 +19,7 @@ type RentReport struct {
 	TotalRents    int             `json:"total_rents"`
 	TotalStudents int             `json:"total_students"`
 	TopBooks      []BookRentStats `json:"top_books"`
+	TopOverdue    []OverdueUser   `json:"top_overdue"`
 }
 
 type OverdueResponse struct {

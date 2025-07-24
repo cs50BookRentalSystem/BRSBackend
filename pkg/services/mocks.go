@@ -105,3 +105,16 @@ func (m *MockRentService) GetRentedBooksByStudent(ctx context.Context, studentCa
 func (m *MockRentService) ReturnBooks(ctx context.Context, cartID uuid.UUID) (*dto.ReturnBooksResponse, error) {
 	return m.ReturnBooksFunc(ctx, cartID)
 }
+
+type MockReportService struct {
+	GetOverdueRentalsFunc func(ctx context.Context, studentCardID *string, limit, offset int) (*dto.OverdueResponse, error)
+	GetRentalReportFunc   func(ctx context.Context, limit, offset int) (*dto.RentReport, error)
+}
+
+func (m *MockReportService) GetOverdueRentals(ctx context.Context, studentCardID *string, limit, offset int) (*dto.OverdueResponse, error) {
+	return m.GetOverdueRentalsFunc(ctx, studentCardID, limit, offset)
+}
+
+func (m *MockReportService) GetRentalReport(ctx context.Context, limit, offset int) (*dto.RentReport, error) {
+	return m.GetRentalReportFunc(ctx, limit, offset)
+}

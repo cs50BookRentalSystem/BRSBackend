@@ -31,14 +31,14 @@ func (h *Handler) ListOverdueRentals(w http.ResponseWriter, r *http.Request, par
 }
 
 func (h *Handler) GetRentalReports(w http.ResponseWriter, r *http.Request, params api.GetRentalReportsParams) {
-	limit := 0
+	limit := 10
 	offset := 0
-	if params.Limit == nil || int(*params.Limit) > 0 {
-		limit = 20
+	if params.Limit != nil {
+		limit = int(*params.Limit)
 	}
 
-	if params.Offset == nil || int(*params.Offset) > 0 {
-		offset = 0
+	if params.Offset != nil {
+		offset = int(*params.Offset)
 	}
 
 	report, err := h.reportService.GetRentalReport(r.Context(), limit, offset)

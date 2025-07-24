@@ -628,6 +628,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/BookRentStats'
+        top_overdue:
+          type: array
+          items:
+            $ref: '#/components/schemas/OverdueUser'
 
     Books:
       x-go-type: models.Book

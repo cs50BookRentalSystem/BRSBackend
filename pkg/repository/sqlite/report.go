@@ -135,6 +135,12 @@ func (r reportRepository) GetRentalReport(ctx context.Context, limit, offset int
 	}
 	report.TopBooks = topBooks
 
+	overdueUsers, _, err := r.GetOverdueRentals(ctx, nil, limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get overdue rentals: %w", err)
+	}
+	report.TopOverdue = overdueUsers
+
 	return &report, nil
 }
 
