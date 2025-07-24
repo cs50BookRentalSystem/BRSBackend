@@ -1,4 +1,5 @@
 FROM golang:1.24.3 AS build_brs
+ENV BRS_ENV=docker
 ENV CGO_ENABLED=1
 ARG BUILD_REF
 

@@ -50,7 +50,16 @@ func init() {
 }
 
 func runCommand(cmd *cobra.Command, args []string) {
-	db, err := config.NewDatabase("/data/identifier.sqlite")
+	dbPath := "./identifier.sqlite"
+	env := os.Getenv("BRS_ENV")
+	if env == "docker" {
+		dbPath = "/data/identifier.sqlite"
+	}
+	if os.Getenv("BRS_SQLITE") != "" {
+		dbPath = os.Getenv("BRS_SQLITE")
+	}
+
+	db, err := config.NewDatabase(dbPath)
 	if err != nil {
 		panic("Failed to connect database")
 	}
@@ -61,9 +70,18 @@ func runCommand(cmd *cobra.Command, args []string) {
 	repo := sqlite.NewRepository(db.DB)
 	svc := services.NewService(repo)
 
-	config.SeedDefaultLibrarian(svc.Auth)
+	librarianUser := os.Getenv("LIBRARIAN_USER")
+	librarianPass := os.Getenv("LIBRARIAN_PASS")
 
-	config.SeedData(svc.Book, svc.Student, svc.Rent)
+	if env != "prod" {
+		config.SeedData(svc.Book, svc.Student, svc.Rent)
+	}
+
+	if librarianUser != "" && librarianPass != "" {
+		config.SeedLibrarian(svc.Auth, librarianUser, librarianPass)
+	} else if env != "prod" {
+		config.SeedDefaultLibrarian(svc.Auth)
+	}
 
 	h := handlers.NewHandler(svc)
 
