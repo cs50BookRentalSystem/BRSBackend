@@ -55,23 +55,23 @@ func (h *Handler) GetOpenAPISpec(w http.ResponseWriter, r *http.Request) {
 	}
 	headers := r.Header
 
-	serverurl := &url.URL{}
+	serverUrl := &url.URL{}
 	if forwardedHost, ok := headers["X-Forwarded-Host"]; ok {
 		proto := "http"
 		if forwardedProto, ok := headers["X-Forwarded-Proto"]; ok {
 			proto = forwardedProto[0]
 		}
-		serverurl.Scheme = proto
-		serverurl.Host = forwardedHost[0]
+		serverUrl.Scheme = proto
+		serverUrl.Host = forwardedHost[0]
 	}
 
 	if forwardedPrefix, ok := headers["X-Forwarded-Prefix"]; ok {
-		serverurl = serverurl.JoinPath(forwardedPrefix[0])
+		serverUrl = serverUrl.JoinPath(forwardedPrefix[0])
 	}
 
-	if *serverurl != (url.URL{}) {
+	if *serverUrl != (url.URL{}) {
 		swagger.AddServer(&openapi3.Server{
-			URL: serverurl.String(),
+			URL: serverUrl.String(),
 		})
 	}
 
