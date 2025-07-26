@@ -16,6 +16,7 @@ type StudentService interface {
 	GetStudentByID(ctx context.Context, id string) (*models.Student, error)
 	GetStudentByCardNumber(ctx context.Context, number string) (*models.Student, error)
 	GetAllStudents(ctx context.Context, params dto.PaginationParams) (*dto.StudentsResponse, error)
+	DeleteStudent(ctx context.Context, id string) error
 }
 
 type studentService struct {
@@ -76,4 +77,14 @@ func (s studentService) GetAllStudents(ctx context.Context, params dto.Paginatio
 	}
 
 	return response, nil
+}
+
+func (s studentService) DeleteStudent(ctx context.Context, uid string) error {
+	id, err := uuid.Parse(uid)
+
+	if err != nil {
+		return fmt.Errorf("invalid uuid format: %w", err)
+	}
+
+	return s.repo.Delete(ctx, id)
 }

@@ -231,6 +231,12 @@ paths:
       parameters:
         - $ref: '#/components/parameters/limitParam'
         - $ref: '#/components/parameters/offsetParam'
+        - name: card_id
+          in: query
+          description: "Student card id"
+          required: false
+          schema:
+            type: string
       responses:
         '200':
           description: "Successfully retrieved list of students"
@@ -309,6 +315,37 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Students'
+        '404':
+          description: "Student not found"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Student not found"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      summary: "Delete a Student by ID"
+      description: "Delete a specific student"
+      operationId: "DeleteStudentById"
+      tags:
+        - Students
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: "The ID of the Student to retrieve"
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '201':
+          description: "Student Deleted"
         '404':
           description: "Student not found"
           content:

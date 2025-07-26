@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/google/uuid"
 	oapiTypes "github.com/oapi-codegen/runtime/types"
@@ -32,6 +33,20 @@ func (h *Handler) ListAllStudents(w http.ResponseWriter, r *http.Request, params
 	if offsetStr := r.URL.Query().Get("offset"); offsetStr != "" {
 		if params.Offset != nil && int(*params.Limit) > 0 {
 			paginationParams.Offset = int(*params.Offset)
+		} else {
+			h.writeErrorResponse(w, http.StatusBadRequest, "Invalid offset parameter")
+		}
+	}
+
+	if cardId := r.URL.Query().Get("card_id"); cardId != "" {
+		if params.CardId != nil && strings.TrimSpace(*params.CardId) != "" {
+			response, err := h.studentService.GetStudentByCardNumber(r.Context(), cardId)
+			if err != nil {
+				h.writeErrorResponse(w, http.StatusNotFound, "Failed to get student")
+				return
+			}
+			h.writeResponse(w, http.StatusOK, response)
+			return
 		} else {
 			h.writeErrorResponse(w, http.StatusBadRequest, "Invalid offset parameter")
 		}
@@ -73,7 +88,7 @@ func (h *Handler) AddStudent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.studentService.CreateStudent(r.Context(), &student); err != nil {
-		h.writeErrorResponse(w, http.StatusBadRequest, err.Error())
+		h.writeErrorResponse(w, http.StatusUnprocessableEntity, err.Error())
 		return
 	}
 
@@ -88,9 +103,22 @@ func (h *Handler) GetStudentById(w http.ResponseWriter, r *http.Request, id oapi
 	}
 	student, err := h.studentService.GetStudentByID(r.Context(), id.String())
 	if err != nil {
-		h.writeErrorResponse(w, http.StatusNotFound, err.Error())
+		h.writeErrorResponse(w, http.StatusUnprocessableEntity, err.Error())
 		return
 	}
 
 	h.writeResponse(w, http.StatusOK, student)
+}
+
+func (h *Handler) DeleteStudentById(w http.ResponseWriter, r *http.Request, id oapiTypes.UUID) {
+	if id == uuid.Nil || id.String() == "" {
+		h.writeErrorResponse(w, http.StatusBadRequest, "Student ID is required")
+		return
+	}
+	if err := h.studentService.DeleteStudent(r.Context(), id.String()); err != nil {
+		h.writeErrorResponse(w, http.StatusUnprocessableEntity, err.Error())
+		return
+	}
+
+	h.writeResponse(w, http.StatusCreated, "ok")
 }

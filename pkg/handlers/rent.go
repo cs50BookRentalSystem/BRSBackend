@@ -28,7 +28,7 @@ func (h *Handler) CreateRentTransaction(w http.ResponseWriter, r *http.Request) 
 
 	response, err := h.rentService.CreateRentTransaction(r.Context(), req)
 	if err != nil {
-		h.writeErrorResponse(w, http.StatusInternalServerError, "Failed to create rent transaction")
+		h.writeErrorResponse(w, http.StatusUnprocessableEntity, "Failed to create rent transaction")
 		return
 	}
 
@@ -68,7 +68,7 @@ func (h *Handler) ListRents(w http.ResponseWriter, r *http.Request, params api.L
 
 	rents, err := h.rentService.GetRents(r.Context(), filter)
 	if err != nil {
-		h.writeErrorResponse(w, http.StatusInternalServerError, "Failed to get rents")
+		h.writeErrorResponse(w, http.StatusUnprocessableEntity, "Failed to get rents")
 		return
 	}
 
@@ -84,7 +84,7 @@ func (h *Handler) GetRentedBooksByStudent(w http.ResponseWriter, r *http.Request
 
 	response, err := h.rentService.GetRentedBooksByStudent(r.Context(), params.StudentCardId)
 	if err != nil {
-		h.writeErrorResponse(w, http.StatusInternalServerError, "Failed to get rented books")
+		h.writeErrorResponse(w, http.StatusUnprocessableEntity, "Failed to get rented books")
 		return
 	}
 
@@ -109,7 +109,7 @@ func (h *Handler) ReturnBooks(w http.ResponseWriter, r *http.Request) {
 
 	response, err := h.rentService.ReturnBooks(r.Context(), req.CartID)
 	if err != nil {
-		h.writeErrorResponse(w, http.StatusInternalServerError, "Failed to return books")
+		h.writeErrorResponse(w, http.StatusUnprocessableEntity, "Failed to return books")
 		return
 	}
 

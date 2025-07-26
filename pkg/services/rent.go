@@ -61,6 +61,10 @@ func (r *rentService) CreateRentTransaction(ctx context.Context, req dto.CreateR
 		bookCounts[bookID]++
 	}
 
+	if (bookCounts == nil) || (len(bookCounts) == 0 || len(bookCounts) > 3) {
+		return nil, fmt.Errorf("invalid book counts: %d", len(bookCounts))
+	}
+
 	for _, book := range books {
 		requestedCount := bookCounts[book.Id]
 		if book.Count < requestedCount {

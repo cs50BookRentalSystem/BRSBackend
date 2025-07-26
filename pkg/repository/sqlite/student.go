@@ -74,7 +74,7 @@ func (s studentRepository) Update(ctx context.Context, student *models.Student) 
 }
 
 func (s studentRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	panic("implement me")
+	return s.db.WithContext(ctx).Where("id = ?", id).Delete(&models.Student{}).Error
 }
 
 func NewStudentRepository(db *gorm.DB) repository.StudentRepository {

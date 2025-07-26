@@ -26,7 +26,7 @@ func (h *Handler) AddBook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.bookService.CreateBook(r.Context(), &book); err != nil {
-		h.writeErrorResponse(w, http.StatusBadRequest, err.Error())
+		h.writeErrorResponse(w, http.StatusUnprocessableEntity, err.Error())
 		return
 	}
 
@@ -65,7 +65,7 @@ func (h *Handler) ListOrSearchBooks(w http.ResponseWriter, r *http.Request, para
 
 	allBooks, err := h.bookService.GetAllBooks(r.Context(), paginationParams)
 	if err != nil {
-		h.writeErrorResponse(w, http.StatusInternalServerError, "Failed to retrieve books")
+		h.writeErrorResponse(w, http.StatusUnprocessableEntity, "Failed to retrieve books")
 		return
 	}
 
