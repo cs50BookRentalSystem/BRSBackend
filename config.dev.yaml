@@ -1,0 +1,13 @@
+server:
+  port: 8080
+  env: dev
+
+database:
+  dsn: "./brs.sqlite"
+
+librarian:
+  user: "admin"
+  pass: "securePasswd"
+
+rent:
+  rental_days: 3

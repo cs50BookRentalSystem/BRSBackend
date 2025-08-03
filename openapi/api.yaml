@@ -1,0 +1,889 @@
+openapi: 3.0.3
+info:
+  title: Book Rental System API
+  description: | 
+    A comprehensive API for managing a library's book rental system, including: 
+    - Librarian authentication 
+    - Book inventory management 
+    - Student registration and management 
+    - Book rental and return transactions
+    - Overdue tracking and reporting
+  version: 1.0.0
+
+servers:
+  - url: 'http://localhost:8080'
+    description: "Local setup"
+
+security:
+  - cookieAuth: []
+
+paths:
+  /openapi.json:
+    x-hidden: true
+    get:
+      summary: Get this OpenAPI spec
+      operationId: GetOpenAPISpec
+      security: []
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: string
+                format: json
+        default:
+          $ref: '#/components/responses/InvalidRequestParameters'
+
+  /login:
+    post:
+      summary: "Librarian login"
+      description: "Authenticate librarian credentials and create a session"
+      operationId: "Login"
+      tags:
+        - Authentication
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            example:
+              user: "admin"
+              pass: "securePasswd"
+      responses:
+        '200':
+          description: "Login successful - session created"
+          headers:
+            Set-Cookie:
+              description: "Session cookie to maintain login state"
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  librarian_id:
+                    type: string
+                    format: uuid
+              example:
+                message: "Login successful"
+                librarian_id: "12345678-e29b-41d4-a716-446655440000"
+        '401':
+          description: "Invalid username or password"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: 401
+                message: "Invalid credentials"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /logout:
+    post:
+      summary: "Logout librarian"
+      description: "Invalidate the current session and logout the librarian"
+      operationId: "Logout"
+      tags:
+        - Authentication
+      security: []
+      responses:
+        '200':
+          description: "Logout successful"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Logout successful"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /librarian:
+    get:
+      summary: "Librarian profile"
+      description: "Just for checking whether librarian is already login or not"
+      operationId: "Librarian"
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: "valid session and response librarian profile"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  librarian_id:
+                    type: string
+                    format: uuid
+              example:
+                message: "valid session"
+                librarian_id: "12345678-e29b-41d4-a716-446655440000"
+        '401':
+          description: "invalid session or expired session"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: 401
+                message: "Invalid or expired session. Please log in again."
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /books:
+    get:
+      summary: "List or search books (order by newly created books)"
+      description: "Retrieve all books or filter by partial title or ID"
+      operationId: "ListOrSearchBooks"
+      tags:
+        - Books
+      parameters:
+        - name: query
+          in: query
+          required: false
+          description: "Optional search term (partial title match or exact ID match)"
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 100
+          example: "Theory of Everything"
+        - $ref: '#/components/parameters/limitParam'
+        - $ref: '#/components/parameters/offsetParam'
+      responses:
+        '200':
+          description: "Successfully retrieved list of books"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Books"
+                  pagination:
+                    $ref: '#/components/schemas/PaginationInfo'
+        '400':
+          $ref: '#/components/responses/InvalidRequestParameters'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      summary: "Add a new book"
+      description: "Register a new book in the library inventory"
+      operationId: "AddBook"
+      tags:
+        - Books
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Books'
+            example:
+              title: "The Great Gatsby"
+              description: "The Great Gatsby, novel by American author F. Scott Fitzgerald, published in 1925."
+              count: 5
+      responses:
+        '201':
+          description: "Book added successfully"
+          headers:
+            Location:
+              description: "URL of the newly created book resource"
+              schema:
+                type: string
+                format: uri
+              example: "/books"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Book added successfully"
+        '400':
+          $ref: '#/components/responses/InvalidRequestBody'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /books/{id}:
+    delete:
+      summary: "Delete a Book by ID"
+      description: "Delete a specific book"
+      operationId: "DeleteBookById"
+      tags:
+        - Books
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: "The ID of the Book to retrieve"
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '201':
+          description: "Book Deleted"
+        '404':
+          description: "Book not found"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Book not found"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /students:
+    get:
+      summary: "List all students"
+      description: "Retrieve a paginated list of all registered students"
+      operationId: "ListAllStudents"
+      tags:
+        - Students
+      parameters:
+        - $ref: '#/components/parameters/limitParam'
+        - $ref: '#/components/parameters/offsetParam'
+        - name: card_id
+          in: query
+          description: "Student card id"
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "Successfully retrieved list of students"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Students'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationInfo'
+        '400':
+          $ref: '#/components/responses/InvalidRequestParameters'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      summary: "Register a new student"
+      description: "Add a new student to the system"
+      operationId: "AddStudent"
+      tags:
+        - Students
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Students'
+      responses:
+        '201':
+          description: "Student added successfully"
+          headers:
+            Location:
+              description: "URL of the newly created book resource"
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Student added successfully"
+        '400':
+          $ref: '#/components/responses/InvalidRequestBody'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /students/{id}:
+    get:
+      summary: "Get a Student by ID"
+      description: "Retrieve detailed information about a specific student"
+      operationId: "GetStudentById"
+      tags:
+        - Students
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: "The ID of the Student to retrieve"
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: "Student found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Students'
+        '404':
+          description: "Student not found"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Student not found"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      summary: "Delete a Student by ID"
+      description: "Delete a specific student"
+      operationId: "DeleteStudentById"
+      tags:
+        - Students
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: "The ID of the Student to retrieve"
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '201':
+          description: "Student Deleted"
+        '404':
+          description: "Student not found"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Student not found"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /rents:
+    post:
+      summary: "Create rental transaction"
+      description: "Rent one or more books to a student"
+      operationId: "CreateRentTransaction"
+      tags:
+        - Rents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RentRequest'
+            example:
+              student_id: "87654321-e29b-41d4-a716-446655440002"
+              book_ids: [ "12345678-e29b-41d4-a716-446655440001", "02345679-e29b-41d4-a716-446655440001"]
+      responses:
+        '201':
+          description: "Rent created successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cart_id:
+                    type: string
+                    format: uuid
+                  message:
+                    type: string
+                    example: "Books rented successfully"
+        '400':
+          $ref: '#/components/responses/InvalidRequestBody'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      summary: "Get list of all rents with optional filters"
+      operationId: "ListRents"
+      tags:
+        - Rents
+      parameters:
+        - name: book_name
+          in: query
+          description: "Filter by book title (partial match)"
+          required: false
+          schema:
+            type: string
+        - name: student_name
+          in: query
+          description: "Filter by student first or last name (partial match)"
+          required: false
+          schema:
+            type: string
+        - name: date
+          in: query
+          description: "Filter by rent date (YYYY-MM-DD)"
+          required: false
+          schema:
+            type: string
+            format: date
+        - $ref: "#/components/parameters/limitParam"
+        - $ref: "#/components/parameters/offsetParam"
+      responses:
+        '200':
+          description: "List of rent records"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RentSummary'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationInfo'
+        '400':
+          $ref: '#/components/responses/InvalidRequestParameters'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /returns:
+    get:
+      summary: "List books currently rented by a student"
+      operationId: "GetRentedBooksByStudent"
+      tags:
+        - Rents
+        - Returns
+      parameters:
+        - name: student_card_id
+          in: query
+          description: "Student card id"
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "List of currently rented books by student"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RentSummary'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationInfo'
+        '400':
+          $ref: '#/components/responses/InvalidRequestParameters'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      summary: "Mark a cart as returned"
+      operationId: "ReturnBooks"
+      tags:
+        - Rents
+        - Returns
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cart_id:
+                  type: string
+                  format: uuid
+              required:
+                - cart_id
+      responses:
+        '200':
+          description: "Cart marked as returned"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  cart_id:
+                    type: string
+                    format: uuid
+        '400':
+          $ref: '#/components/responses/InvalidRequestBody'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /overdues:
+    get:
+      summary: "Get overdue rentals"
+      description: "List students with overdue book rentals"
+      operationId: "ListOverdueRentals"
+      tags:
+        - Reports
+      parameters:
+        - name: student_card_id
+          in: query
+          required: false
+          schema:
+            type: string
+        - $ref: "#/components/parameters/limitParam"
+        - $ref: "#/components/parameters/offsetParam"
+      responses:
+        "200":
+          description: "List of overdue users"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/OverdueUser"
+                  pagination:
+                    $ref: '#/components/schemas/PaginationInfo'
+        '400':
+          $ref: '#/components/responses/InvalidRequestParameters'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /reports:
+    get:
+      summary: "Get rental report"
+      description: "Retrieve comprehensive rental statistics and reports"
+      operationId: "GetRentalReports"
+      tags:
+        - Reports
+      parameters:
+        - $ref: "#/components/parameters/limitParam"
+        - $ref: "#/components/parameters/offsetParam"
+      responses:
+        "200":
+          description: "Rent report retrieved successfully"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RentReport"
+        '400':
+          $ref: '#/components/responses/InvalidRequestParameters'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: session_id
+
+  schemas:
+    LoginRequest:
+      x-go-type: models.Librarian
+      x-go-type-import:
+        name: Librarian
+        path: BRSBackend/pkg/models
+      type: object
+      properties:
+        user:
+          type: string
+        pass:
+          type: string
+      required:
+        - user
+        - pass
+
+    RentRequest:
+      type: object
+      properties:
+        student_id:
+          type: string
+          format: uuid
+        book_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+      required:
+        - student_id
+        - book_ids
+
+    RentSummary:
+      type: object
+      properties:
+        rent_id:
+          type: string
+          format: uuid
+        cart_id:
+          type: string
+          format: uuid
+        book_title:
+          type: string
+        student_name:
+          type: string
+        rented_date:
+          type: string
+          format: date-time
+
+    OverdueUser:
+      type: object
+      properties:
+        cart_id:
+          type: string
+          format: uuid
+        student_name:
+          type: string
+        card_id:
+          type: string
+        phone:
+          type: string
+        total_books:
+          type: integer
+        date_rented:
+          type: string
+          format: date-time
+        days_overdue:
+          type: integer
+
+    BookRentStats:
+      type: object
+      properties:
+        book_title:
+          type: string
+        rented_count:
+          type: integer
+
+    RentReport:
+      type: object
+      properties:
+        total_rents:
+          type: integer
+        total_students:
+          type: integer
+        top_books:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookRentStats'
+        top_overdue:
+          type: array
+          items:
+            $ref: '#/components/schemas/OverdueUser'
+
+    Books:
+      x-go-type: models.Book
+      x-go-type-import:
+        name: Book
+        path: BRSBackend/pkg/models
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          nullable: false
+        description:
+          type: string
+        count:
+          type: integer
+          nullable: false
+
+    Students:
+      x-go-type: models.Student
+      x-go-type-import:
+        name: Student
+        path: BRSBackend/pkg/models
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        card_id:
+          type: string
+        first_name:
+          type: string
+          nullable: false
+        last_name:
+          type: string
+          nullable: false
+        major:
+          type: string
+          nullable: false
+        phone:
+          type: string
+          nullable: false
+
+    Rents:
+      x-go-type: models.Rent
+      x-go-type-import:
+        name: Rent
+        path: BRSBackend/pkg/models
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        cart_id:
+          type: string
+          format: uuid
+        book_id:
+          type: string
+          format: uuid
+
+    Carts:
+      x-go-type: models.Cart
+      x-go-type-import:
+        name: Cart
+        path: BRSBackend/pkg/models
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        student_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+            - RENTED
+            - RETURNED
+
+    Error:
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+          description: Error code
+        message:
+          type: string
+          description: Error message
+
+    PaginationInfo:
+      type: object
+      properties:
+        offset:
+          type: integer
+          minimum: 0
+          description: Number of items skipped
+        limit:
+          type: integer
+          minimum: 1
+          description: Maximum number of items returned
+        total:
+          type: integer
+          minimum: 0
+          description: Total number of items available
+        has_next:
+          type: boolean
+          description: Whether there are more items available
+        has_previous:
+          type: boolean
+          description: Whether there are previous items available
+
+  parameters:
+    offsetParam:
+      name: offset
+      in: query
+      description: Number of items to skip before returning the results.
+      required: false
+      schema:
+        type: integer
+        format: int32
+        minimum: 0
+        default: 0
+
+    limitParam:
+      name: limit
+      in: query
+      description: Maximum number of items to return.
+      required: false
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+        maximum: 100
+        default: 20
+
+  responses:
+    UnauthorizedError:
+      description: "Authentication required or session expired"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 401
+            message: "Authentication required"
+    
+    InternalServerError:
+      description: "Internal server error"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 500
+            message: "An unexpected error occurred"
+
+    InvalidRequestParameters:
+      description: "Invalid request parameters"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 400
+            message: "Invalid request parameters"
+
+    InvalidRequestBody:
+      description: "Invalid request Body"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: 400
+            message: "Invalid request Body"
